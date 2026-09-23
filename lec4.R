@@ -3,11 +3,11 @@ options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
 if (!requireNamespace('pacman', quietly = TRUE)) {
   install.packages('pacman')
 }
-pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja")
+pacman::p_load("tidyverse","ggplot2", "dplyr","gridExtra","papaja","here")
 options(warn = 1)  # 即时显示弃用及其他警告
 
-# 数据导入
-data <- read.csv("data/evans2020JExpPsycholLearn_exp1_full_data.csv")
+# 数据导入：here::here() 以项目根目录为锚点，避免依赖当前工作目录
+data <- read.csv(here::here("data", "evans2020JExpPsycholLearn_exp1_full_data.csv"))
 
 cat("被试数量：", length(unique(data$subject)), "\n")
 data %>% 
@@ -429,7 +429,7 @@ p2 <- plot_pdf(10, 1)
 p3 <- plot_pdf(1, 1)
 gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 
-data <- read.csv("data/evans2020JExpPsycholLearn_exp1_full_data.csv")
+data <- read.csv(here::here("data", "evans2020JExpPsycholLearn_exp1_full_data.csv"))
 
 data %>% 
   group_by(subject) %>% 

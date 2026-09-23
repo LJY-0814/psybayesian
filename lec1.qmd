@@ -204,15 +204,14 @@ options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
 if (!requireNamespace('pacman', quietly = TRUE)) {
     install.packages('pacman')
 }
-#install.packages(c("StanHeaders","rstan"),type="source")
+
 ```
 
 ```{r}
 #| code-fold: true
 #| code-summary: "展开代码"
 pacman::p_load("tidyverse","ggplot2","dplyr","car","ggpubr",'rstan',
-               "BayesFactor","bayestestR","gridExtra","TOSTER",'papaja')
-#               'brms','bayesplot','posterior')
+               "BayesFactor","bayestestR","gridExtra","TOSTER",'papaja',"here")
 ```
 
 ```{r}
@@ -228,11 +227,8 @@ packageVersion('bruceR')
 options(warn = -1)  # 抑制警告
 
 #导入数据
-SMS_data <- tryCatch({
-  read.csv('/home/mw/input/bayes3797/SMS_Well_being.csv')
-}, error = function(e) {
-  read.csv('data/SMS_Well_being.csv')
-})
+# here::here() 以项目根目录为锚点，避免依赖当前工作目录
+SMS_data <- read.csv(here::here('data', 'SMS_Well_being.csv'))
 ```
 
 ```{r}
@@ -599,11 +595,7 @@ Haines et al. (2025), *Psychological Methods*
 
 ```{r}
 #导入数据
-df_flanker <- tryCatch({
-  read.csv('/home/mw/input/bayes3797/flanker_1.csv')
-}, error = function(e) {
-  read.csv('data/flanker_1.csv')
-}) 
+df_flanker <- read.csv(here::here('data', 'flanker_1.csv'))
 ```
 
 ```{r}
@@ -626,7 +618,7 @@ pacman::p_load("dplyr","tidyr","ggplot2","patchwork","tibble","brms","tidybayes"
 #| code-fold: true
 #| code-summary: "展开代码"
 # 加载数据
-df_flanker <- read.csv('data/flanker_1.csv')
+df_flanker <- read.csv(here::here('data', 'flanker_1.csv'))
 
 # 假设 df_flanker 是原始数据框
 df_trad <- df_flanker

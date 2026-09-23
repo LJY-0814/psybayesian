@@ -5,7 +5,8 @@
 
 ## 2. 铁律与工作流 (Rules & SOPs)
 
-- **版式验证双通道**：① 静态（CSS 挂载与否必须 grep `<link>` 确认）；② 运行时用 playwright 做 DOM 数值实测，阈值 ≤897（slide 高 900）；必须 `?nocache=` 重载否则读到旧 CSS 假阴性。测法细节与三个坑见 3. 节「渲染后视觉/溢出问题排查」。
+- **只做被要求的那一件事（Scope 铁律，用户明确要求）**：用户说改 A 就只改 A。**禁止顺手做 B/C/D** —— 不擅自加全局 CSS、不改其他页、不重构、不"顺便优化"。想加别的，先用一句话问，得到"Yes"再做。改完只报告"改了什么、影响哪几页"。
+- **版式验证**：**禁止全量遍历 / 反复对照实验**（用户明确叫停）。默认只做静态核验：`grep '<link>'` 确认 CSS 挂载、grep 渲染产物确认改动的结构（class/图片路径）已进 HTML；版式由用户 preview 目视确认。**例外**：用户明确要求"修好某类显示问题"时，允许对**涉及的那几页**做一次定点数值验证（例：确认某些 `<img>` 的 `getBoundingClientRect().height` 不再为 0），做完即止、不复测、不扩面。
 - **渲染 SOP**：用户用 Positron + `quarto preview` 实时预览（qmd 保存后约 3 s **原地**更新仓库根的 `lecN.html`）——**优先核验该产物，不必自己渲染**（原理与坑见 3. 节「渲染 qmd / 核验渲染结果」）。确需自己渲染时：① 先 `HOME=$TMPDIR/quarto_home` 重定向 sass 缓存（沙箱内否则必报 `unable to open database file`）；② 仅 `lec1.qmd` 支持 `SMOKE_TEST=true` 快速验证版式（1-2 min），其余章节无此开关；③ 长渲染（>30min）必须 `nohup ... > log 2>&1 &` 后台化、**禁止前台同步等待**（60min 必超时被 kill），并用 `pgrep -fl quarto` 核实进程（`ps` 被沙箱拒绝、`pkill` 可能静默失败）。
 - **改完 qmd 并渲染出 HTML 后，必须提醒用户对齐 `.R` / `.py`**：无论 HTML 由用户的 preview 还是自己渲染产生，都要**主动提醒用户**对齐同章的 `.R` 与 `.py`（文件构成见第 4 节「文件」，对齐维度见「符号与标注约定」）；一律**以 qmd 为准**，不要等用户发现。
 - **MCMC 缓存用工具原生机制**：brms 加 `file=` 参数即可（存在即加载），smoke/full 文件名必须区分（`tmpdata/xxx_smoke` vs `tmpdata/xxx`），目录入 `.gitignore`。
@@ -16,29 +17,34 @@
 | Skill | 触发场景 | 用法 |
 |---|---|---|
 | **quarto-pptx-creator**（项目级，`.agents/skills/`；opencode 旧路径已弃用，DSH/多 agent 均从此目录读取） | 设计新课件/新章节的 qmd 结构、把素材拆成逐页 slide、内容组织方法论 | `skill(name="quarto-pptx-creator")` 加载其流程参考；做 revealjs 时借鉴其"素材→结构化 qmd"骨架，但输出格式仍遵循本文件渲染 SOP |
-| **playwright / dev-browser** | 渲染产物视觉验证、溢出检测、页面截图/操作 | 溢出检测核心工具（见 3. 节场景 1）；必须配 `browser_run_code_unsafe` 跑 DOM 测量脚本 |
+| **playwright** | **不再使用**（用户已取消该环节） | 不要为版式验证启动 playwright / http server / DOM 测量脚本 |
 | **frontend-ui-ux** | slide 视觉/布局调优（两栏、字号、图排版） | 委派 UI 类任务时 `task(category="visual-engineering", load_skills=["frontend-ui-ux"], ...)`，勿用 quick/unspecified 类 |
 | **git-master** | 任何 git 操作（提交、历史检索） | `task(category="quick", load_skills=["git-master"], ...)` 委派，节省主上下文 |
-| **review-work** | 较大实现完成后自查 | 委派 5 路并行审阅；本环境无图像能力，审查以数值/DOM 证据为准 |
+| **review-work** | 较大实现完成后自查 | 委派 5 路并行审阅；本环境无图像能力，审查以静态核验（grep 产物）为准 |
 | **ai-slop-remover** | 清理代码中的 AI 风格冗余注释 | 单文件逐个调用 |
 
-注意：**委派任何 subagent 时都必须传 `load_skills`**（匹配的 skill 优先；无匹配传 `[]`）。图像能力受限的应对见 3. 节「视觉确认截图」。
+注意：**委派任何 subagent 时都必须传 `load_skills`**（匹配的 skill 优先；无匹配传 `[]`）。
 
 ## 3. 避坑指南 / 经验库 (Lessons Learned)
 
 > **场景**: 渲染后视觉/溢出问题排查
-> **❌ 踩坑记录**: ① DOM 全局检测把视口内正常元素误报溢出，且未排除折叠 `<details>` 内不可见 PRE；② 用 file:// 直接访问被浏览器阻止；③ 改 CSS 后复测数值原封不动=浏览器缓存（非 CSS 无效）。
-> **✅ 正确姿势**: 只测当前 present slide；排除 `details:not([open])`；local bottom = `(rect.bottom - secRect.top)/Reveal.getScale()`，阈值 ≤897（slide 高 900），过滤 height≤1；起 `python3 -m http.server` 后访问；URL 加 `?nocache=timestamp` 强刷。
-> **🔔 预警信号**: 数值诡异没变化 → 先查缓存；元素有 rect 但折叠 → 查 closest('details').open。
+> **❌ 踩坑记录**: ① 曾经用 playwright 做 DOM 全局检测，把视口内正常元素误报溢出，且未排除折叠 `<details>` 内不可见 PRE；② 用 file:// 直接访问被浏览器阻止；③ 改 CSS 后复测数值原封不动=浏览器缓存（非 CSS 无效）；④ **逐页遍历 slide 测量极慢（90 页 1–2 min），且反复"对照实验"叠加，属无效劳动**。
+> **✅ 正确姿势**: **不做 DOM 测量**（用户已明确取消）。改完后只做静态核验（CSS 是否被引用、改动结构是否进了 HTML），版式由用户的 preview 目视确认；用户反馈"哪几页有问题"后再定点改。
+> **🔔 预警信号**: 想启动 playwright / http server / 写测量脚本 → 立刻停手。
+
+> **场景**: reveal 的 `.r-stretch` 图片显示不出来（高度 0）
+> **❌ 踩坑记录**: Reveal 的 stretch 逻辑是 `可用高度 = slide 高度(900) − 内容高度`；当 slide 内容本身超过一页，结果 ≤0，图片被写成 `style="height: 0px"` 而完全不可见（实测 lec4 9 张、lec1 3 张）。这与图片路径/文件无关，看似"图片没加载"。
+> **✅ 正确姿势**: 在 `lec.css` 里用 `.reveal .r-stretch, .reveal .stretch { height: auto !important; max-width: 100%; max-height: 800px; }` 取消其内联高度，改为纯 CSS 限高（比例不变、随宽度自适应）。
+> **🔔 预警信号**: `<img class="r-stretch" style="height: 0px;">` 或图片 `naturalWidth>0` 但 `getBoundingClientRect().height===0`。
 
 > **场景**: 调用 rstan/brms 缓存
 > **❌ 踩坑记录**: 误以为 `rstan::stan(file=...)` 是结果缓存——实际 `file` 是 **Stan 模型代码路径**，传 .rds 会当代码读而报错；只有 `brms::brm(file=)` 是结果缓存（`file_refit="never"`）。
 > **✅ 正确姿势**: 先 `args()`/help 核实 API 语义再下结论；smoke 与 full 采样量不同，缓存名必须区分否则 full 加载 smoke 小样本；改模型后需手动删 `tmpdata/*.rds`。
 > **🔔 预警信号**: 用户说"XX 自带缓存"时，先本地验证该包参数再设计，避免直接照搬。
 
-> **场景**: 视觉确认截图
-> **❌ 踩坑记录**: 当前主模型与 multimodal-looker 用的 big-pickle **均不支持图像输入**（look_at 直接报错，agent 挂死 3min）。
-> **✅ 正确姿势**: 放弃读图，全部改用精确 DOM 数值测量（block 级 local top/bottom 定位溢出元素），证据更强。
+> **场景**: 无法读图时的版式确认
+> **❌ 踩坑记录**: 当前主模型与 multimodal-looker 用的 big-pickle **均不支持图像输入**（look_at 直接报错，agent 挂死 3min）；曾据此改用 playwright DOM 测量，既慢又被用户叫停。
+> **✅ 正确姿势**: 不读图、也不测 DOM —— 静态核验（改动是否进了 HTML）+ 交用户 preview 目视确认，用户报页码后定点改。
 > **🔔 预警信号**: 图分析任务长时间 running → 立即 cancel，不等待。
 
 > **场景**: 第三方 MCP 安装

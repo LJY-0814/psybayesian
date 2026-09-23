@@ -82,7 +82,7 @@ PyBayesian/
 
 本项目有三种环境使用方式：
 
-- 自行本地环境配置（即在自己电脑上安装R语言），见 [本地环境配置](#本地环境配置)
+- 自行本地环境配置（即在自己电脑上安装R/Python语言），见 [本地环境配置](#本地环境配置)
 - 和鲸云服务器中的Bayesian镜像，无需额外配置环境
 - dockerhub 镜像，所有用户可拉取镜像使用，见 [dockerhub镜像使用](#dockerhub镜像使用)
 
@@ -100,7 +100,7 @@ pacman::p_load( "brms", "rstan", "bayesplot", "tidybayes", "bayestestR", "loo")
 
 课件使用 [Quarto](https://quarto.org/) 的 revealjs 格式：`lec{id}.qmd` 是源文件，渲染后生成同名的 `lec{id}.html`（1600×900，浏览器直接放映）。
 
-**1. 安装 Quarto**
+**. 安装 Quarto**
 
 ```bash
 # macOS（Homebrew）
@@ -111,7 +111,7 @@ brew install --cask quarto
 quarto --version    # 确认安装成功
 ```
 
-**2. 渲染单讲**
+**. 渲染单讲**
 
 在仓库根目录执行。渲染时会真实运行 `.qmd` 里的 R 代码，请先完成上一节的 R 包配置：
 
@@ -142,7 +142,7 @@ quarto preview lec3.qmd   # 本地起服务并预览，保存后自动刷新
 | 内容超出 1600×900 被截断 | 优先合并多图 → 拆分 slide → 再调 `lec.css` 的字号与行距 |
 | 打开 HTML 后图片不显示 | 用 `python3 -m http.server` 起本地服务再访问，避开浏览器对 `file://` 的限制 |
 
-## dockerhub镜像使用
+## dockerhub镜像使用 [2025年及以及课件适用]
 
 我们已经将 docker 镜像上传至 [dockerhub](https://hub.docker.com/repository/docker/hcp4715/pybayesian)，你可以使用以下命令进行使用。
 
@@ -160,7 +160,6 @@ docker run -it --rm -v path/to/pybayesian:/home/jovyan -p 8888:8888 hcp4715/pyba
 - 注意：请将 `path/to/pybayesian` 替换为你本地的 pybayesian 仓库路径。
 - 例如，在 windows 下，下载或者克隆本pybayesian仓库到 D 盘，你可以执行以命令：`docker run -it --rm -v D:/pybayesian:/home/jovyan -p 8888:8888 hcp4715/pybayesian`
 - 之后在浏览器中输入返回的 url，即可打开 jupyter notebook。在根目录下可以找到pybayesian仓库中的所有notebooks。
-
 
 ### 如何在VS Code打开的jupyter notebook中使用docker container的kernel：
 

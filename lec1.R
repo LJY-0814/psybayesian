@@ -7,14 +7,10 @@ if (!requireNamespace('pacman', quietly = TRUE)) {
 #加载必要的包
 # install.packages(c("StanHeaders","rstan"),type="source") 如果之前没有安装好rstan，需要先运行这行
 pacman::p_load("tidyverse","ggplot2","dplyr","car","ggpubr",'rstan',
-               "BayesFactor","bayestestR","gridExtra","TOSTER",'papaja')
+               "BayesFactor","bayestestR","gridExtra","TOSTER",'papaja',"here")
 
-#导入数据
-SMS_data <- tryCatch({
-  read.csv('/home/mw/input/bayes3797/SMS_Well_being.csv')
-}, error = function(e) {
-  read.csv('data/SMS_Well_being.csv')
-})
+#导入数据：here::here() 以项目根目录为锚点，避免依赖当前工作目录
+SMS_data <- read.csv(here::here('data', 'SMS_Well_being.csv'))
 
 #选择需要的列
 SMS_data <- SMS_data %>% 

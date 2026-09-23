@@ -1,12 +1,12 @@
 ---
 title: "高级心理统计 · 第4讲"
-subtitle: "Balance and Sequentiality in Bayesian Analyses"
+subtitle: "《贝叶斯统计与应用》 · Balance and Sequentiality in Bayesian Analyses"
 author: "胡传鹏 (Dr. Hu Chuan-Peng)"
 institute: "南京师范大学心理学院 · School of Psychology, Nanjing Normal University"
+output-file: lec4.html
 format:
   revealjs:
     theme: default
-    auto-stretch: false
     slide-number: true
     show-slide-number: all
     transition: slide
@@ -24,17 +24,16 @@ execute:
 
 ```{r}
 #| include: false
-knitr::opts_chunk$set(
-  fig.path = "assets/figs/lec4/",
-  fig.width = 10,
-  fig.height = 5,
-  dpi = 144
-)
-library(tidyverse)
-library(ggplot2)
-library(dplyr)
-library(gridExtra)
-library(papaja)
+knitr::opts_chunk$set(fig.path = "assets/figs/lec4/")
+
+# check pacman
+options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
+if (!requireNamespace('pacman', quietly = TRUE)) {
+    install.packages('pacman')
+}
+
+pacman::p_load(tidyverse,gridExtra,papaja,here)
+
 options(warn = -1)
 ```
 
@@ -44,11 +43,11 @@ options(warn = -1)
 
 这些情境可以总结如下：  
 
-| 知识点         | 内容描述                                         | 先验                   |   似然                          | 贝叶斯更新                     |  
-|---------------|------------------------------------------------|------------------------|--------------------------------|------------------------------|  
-| **单个事件**    | 一个使用特定语言风格的心理学实验被成功重复出来的可能性  | [OSC2015](https://doi.org/10.1126/science.aac4716)的结果           |   [Herzenstein et al 2024](https://doi.org/10.1177/09567976241254037 )年的数据    | 可视化的方式 + 简单计算         |  
-| **离散变量**       | 多次试验(多次进行重复实验)的成功率                  | 人为分配的三种成功率(0.2, 0.5, 0.8)和它们出现的可能性  | 进行重复后的结果在**三种**成功率下出现的可能性 | 简单的手动计算 |  
-| **连续变量**       | 多次试验(多次进行重复实验)的正确率                  | 符合正确率(0~1)数据特点和先验经验的概率分布| 进行重复后的结果在**所有**成功率/正确率下出现的可能性 | 已被证明的统计学公式|
+| 知识点         | 内容描述                       | 先验                   |   似然                          | 贝叶斯更新                     |  
+|---------------|-------------------------------|------------------------|--------------------------------|------------------------------|  
+| **单个事件**   | 袋子里四个小球中有几个是蓝色       |  均匀的可能性             |  画出各种可能组合的全部路径     |  根据观测数据“消除”不可能路径         |  
+| **离散变量**   | 多次试验(多次进行重复实验)的成功率  | 指定的三种成功率(0.2, 0.5, 0.8)及其可能性  | 进行重复后的结果在**三种**成功率下出现的可能性 | 简单的手动计算 |  
+| **连续变量**   | 多次试验(多次进行重复实验)的正确率  | 符合正确率(0~1)数据特点和先验经验的概率分布  | 50个试次中正确30次在**所有可能**正确率下出现的可能性 | 已被证明的统计学公式|
 
 
 ---
@@ -65,22 +64,27 @@ options(warn = -1)
 - 随机点运动任务要求被试判断运动点的移动方向（例如，向左还是向右）。  
 - 根据正确率的数据，可以使用心理物理曲线描述运动强度（点的一致性百分比）与决策正确率之间的关系。  
 
-<center>  
-    <table>  
-            <tr>  
-                <td><img src="https://cdn.kesci.com/upload/sjwnyt1yq4.gif?imageView2/0/w/400/h/400" alt=""></td>  
-                <td><img src="https://cdn.kesci.com/upload/sjzjcgwjrm.png?imageView2/0/w/400/h/400" alt=""></td>  
-            </tr>  
-            <tr>  
-                <td>一致性60%</td>  
-                <td>正确率与任务难度</td>  
-            </tr>  
-    </table>  
-</center>  
+:::: {.columns}
 
+::: {.column width="50%"}
+<center>
+<img src="figs/lec3/rdk_10.gif" style="height:360px;">
 
-> Shooshtari, S. V., Sadrabadi, J. E., Azizi, Z., & Ebrahimpour, R. (2018). Confidence representation of perceptual decision by EEG and eye data in a random dot motion task. *Neuroscience*, 406, 510–527. https://doi.org/10.1016/j.neuroscience.2019.03.031  
+一致性 10%
+</center>
+:::
 
+::: {.column width="50%"}
+<center>
+<img src="figs/lec3/rdk_60.gif" style="height:360px;">
+
+一致性 60%
+</center>
+:::
+
+::::
+
+> Shooshtari, S. V., Sadrabadi, J. E., Azizi, Z., & Ebrahimpour, R. (2019). *Neuroscience*, 406, 510-527. doi: 10.1016/j.neuroscience.2019.03.031  
 
 ---
 
@@ -99,8 +103,11 @@ options(warn = -1)
 ## 数据概览
 
 ```{r}
-data <- read.csv("data/evans2020JExpPsycholLearn_exp1_full_data.csv")
+# here::here() 以项目根目录为锚点，避免依赖当前工作目录
+data <- read.csv(here::here('data', 'evans2020JExpPsycholLearn_exp1_full_data.csv'))
+
 cat("被试数量：", length(unique(data$subject)), "\n")
+
 data %>%
   group_by(subject) %>%
   summarise(mean_correct = mean(correct, na.rm = TRUE), .groups = "drop") %>%
@@ -108,13 +115,11 @@ data %>%
   as.data.frame()
 ```
 
-
 ---
 
 **本课目标：进一步强化大家关于贝叶斯推断的直觉**  
 - 数据在贝叶斯推断中的作用；  
-- 先验在贝叶斯推断中的作用。  
-
+- 先验在贝叶斯推断中的作用。
 
 
 ---
@@ -179,41 +184,41 @@ data_subj1 %>%
 
 ### 回顾： Beta-Binomial模型  
 
-我们的先验分布为$Beta(70, 30)$，那么编号为“82111”的被试在253个试次中，有152次判断为正确的可能性（这节课中我们假设正确率为 $\pi$ ），这个似然函数可以用**二项分布**来表示：  
+我们的先验分布为$Beta(70, 30)$，那么编号为“82111”的被试在253个试次中，有152次判断为正确的可能性（这节课中我们假设正确率为 $\theta$ ），这个似然函数可以用**二项分布**来表示：  
 
 $$  
-Y | \pi  \sim \text{Bin}(n, \pi)  
+Y | \theta  \sim \text{Bin}(n, \theta)  
 $$  
 
 似然函数为：  
 
 $$  
-f(y|\pi) = P(Y=y | \pi) = \binom{253}{152} \pi^{152} (1-\pi)^{101}  
+f(y|\theta) = P(Y=y | \theta) = \binom{253}{152} \theta^{152} (1-\theta)^{101}  
 $$  
 
 
 ---
 
-与上节课相同，我们的正确率 $\pi$ 服从$Beta$ 分布，似然函数服从**二项分布**：  
+与上节课相同，我们的正确率 $\theta$ 服从$Beta$ 分布，似然函数为**二项分布**：  
 
 $$  
-Y | \pi  \sim \text{Bin}(n, \, \pi)  
+Y | \theta  \sim \text{Bin}(n, \, \theta)  
 $$  
 
 $$  
-\pi  \sim \text{Beta}(\alpha, \, \beta)  
+\theta  \sim \text{Beta}(\alpha, \, \beta)  
 $$  
 
 从上一节课我们知道，在这种情况下，**后验分布**仍然是 $Beta$ 分布，并且可以表示为：  
 
 $$  
-\pi | (Y = y) \sim \text{Beta}(\alpha + y, \, \beta + n - y)  
+\theta | (Y = y) \sim \text{Beta}(\alpha + y, \, \beta + n - y)  
 $$  
 
 因此，编号为“82111”的被试在253个试次下，有152次判断为正确的情况时，后验分布可以写为：  
 
 $$  
-\pi | (Y = 152) \sim \text{Beta}(\alpha + 152, \, \beta + 101)  
+\theta | (Y = 152) \sim \text{Beta}(\alpha + 152, \, \beta + 101)  
 $$  
 
 
@@ -225,7 +230,7 @@ bayesian_analysis_plot <- function(
     plot_prior      = TRUE,
     plot_likelihood = TRUE,
     plot_posterior  = TRUE,
-    xlabel          = expression("ACC" ~ pi),
+    xlabel          = expression("ACC" ~ theta),
     show_legend     = TRUE
 ) {
   
@@ -331,7 +336,7 @@ bayesian_analysis_plot <- function(
 ---
 
 ```{r}
-options(repr.plot.width=10,repr.plot.height=5)
+#| fig-height: 5
 fig <- bayesian_analysis_plot(70, 30, 152, 253) +
   ggplot2::coord_cartesian(xlim = c(0.4, 0.9))  
 print(fig)
@@ -347,7 +352,7 @@ print(fig)
 --> **不同的数据意味着不同的似然**  
 
 $$  
-f(\pi | y) = \frac{f(\pi)L(\pi|y)}{f(y)} \propto f(\pi)L(\pi|y)  
+f(\theta | y) = \frac{f(\theta)L(\theta|y)}{f(y)} \propto f(\theta)L(\theta|y)  
 $$  
 
 接下来我们将看到，不同的似然对后验分布的影响。  
@@ -389,13 +394,13 @@ $$
 在 a 的情况下（128次试次，77次判断为正确），似然函数为：  
 
 $$  
-f(y \mid \pi) = P(Y = 77 \mid \pi) = \binom{128}{77} \pi^{77} (1 - \pi)^{128 - 77}  
+f(y \mid \theta) = P(Y = 77 \mid \theta) = \binom{128}{77} \theta^{77} (1 - \theta)^{128 - 77}  
 $$  
 
 即：  
 
 $$  
-f(y \mid \pi) = \binom{128}{77} \pi^{77} (1 - \pi)^{51}  
+f(y \mid \theta) = \binom{128}{77} \theta^{77} (1 - \theta)^{51}  
 $$  
 
 
@@ -407,13 +412,13 @@ $$
 在 a+b 的情况下（254次试次，152次判断为正确），似然函数为：  
 
 $$  
-f(y \mid \pi) = P(Y = 152 \mid \pi) = \binom{254}{152} \pi^{152} (1 - \pi)^{254 - 152}  
+f(y \mid \theta) = P(Y = 152 \mid \theta) = \binom{254}{152} \theta^{152} (1 - \theta)^{254 - 152}  
 $$  
 
 即：  
 
 $$  
-f(y \mid \pi) = \binom{254}{152} \pi^{152} (1 - \pi)^{102}  
+f(y \mid \theta) = \binom{254}{152} \theta^{152} (1 - \theta)^{102}  
 $$  
 
 
@@ -425,19 +430,20 @@ $$
 在 a+b+c 下（385次试次，231次判断为正确），似然函数为：  
 
 $$  
-f(y \mid \pi) = P(Y = 231 \mid \pi) = \binom{385}{231} \pi^{231} (1 - \pi)^{385 - 231}  
+f(y \mid \theta) = P(Y = 231 \mid \theta) = \binom{385}{231} \theta^{231} (1 - \theta)^{385 - 231}  
 $$  
 
 即：  
 
 $$  
-f(y \mid \pi) = \binom{385}{231} \pi^{231} (1 - \pi)^{154}  
+f(y \mid \theta) = \binom{385}{231} \theta^{231} (1 - \theta)^{154}  
 $$  
 
 
 ---
 
 ```{r}
+#| fig-height: 5
 # 定义先验分布的 alpha 和 beta
 alpha <- 70
 beta  <- 30
@@ -486,6 +492,7 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 ---
 
 ```{r}
+#| fig-height: 5
 # 分别创建三个图（包含后验）
 p1 <- bayesian_analysis_plot(alpha, beta, y = 77,  n = 128, plot_posterior = TRUE) +
   coord_cartesian(xlim = c(0.4, 0.9))+ 
@@ -520,10 +527,10 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 
 ---
 
-*注意：在似然中，y轴为$f(y|\pi)$，表示在特定的$\pi$值下产生当前数据的相对可能性。*  
+*注意：在似然中，y轴为$f(y|\theta)$，表示在特定的$\theta$值下产生当前数据的相对可能性。*  
 
 - **1个 block的情况：进行了 128 次试次，其中有 77 次（60%）判断为正确**  
-  - 样本量较小，似然分布较宽，意味着观测数据对正确率$\pi$的约束不强，反映出不确定性较高。  
+  - 样本量较小，似然分布较宽，意味着观测数据对正确率$\theta$的约束不强，反映出不确定性较高。  
 
 - **2个 block的情况：一共进行了 254 次试次，其中有 152 次（60%）判断为正确**  
   - 随着样本量的增大，似然分布变得更窄，表示观测数据更加集中，推断出的正确率更加有约束力。  
@@ -538,7 +545,7 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 
 - **结论**  
   1. **当似然反映的信息越集中时，它对后验的影响越大**  
-  2. 样本量越大，似然对正确率$\pi$的约束力越强，后验分布也会更加集中于观测结果，这使得我们对$\pi$的推断更为确定。  
+  2. 样本量越大，似然对正确率$\theta$的约束力越强，后验分布也会更加集中于观测结果，这使得我们对$\theta$的推断更为确定。  
 
 
 ---
@@ -563,7 +570,7 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 
 ---
 
-在贝叶斯框架中，随着更多数据的到来，数据对后验的影响逐渐增加。相对地，先验信念的影响逐渐减小。总体上，数据的增加使得我们对正确率 $\pi$ 的推断更为精确。 
+在贝叶斯框架中，随着更多数据的到来，数据对后验的影响逐渐增加。相对地，先验信念的影响逐渐减小。总体上，数据的增加使得我们对正确率 $\theta$ 的推断更为精确。 
 
 
 ---
@@ -571,7 +578,7 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 ##### 随着数据的影响，后验如何演变？  
 
 在随机点运动任务的例子中，我们逐步观察到随着样本量的增加：  
-- **先验信念的影响逐渐减弱**：最初的先验分布提供了对正确率 $\pi$ 的初步信念，但随着更多数据被观察到，先验对后验的影响逐渐减弱。  
+- **先验信念的影响逐渐减弱**：最初的先验分布提供了对正确率 $\theta$ 的初步信念，但随着更多数据被观察到，先验对后验的影响逐渐减弱。  
 - **数据的主导地位逐渐增强**：随着实验试次的增多，似然函数变得越来越窄，表示观测数据对正确率的推断更加集中和精确。
 
 
@@ -601,6 +608,8 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 - 每一份新数据都会使前一次后验模型（反映我们在观察到这些数据之前的理解）成为新的先验模型。  
   
 > 动态演示：后验随着新数据逐步更新（课堂演示环节）。  
+
+<center><img src='figs/lec4/skex9x185z_2x.gif' style='height:360px;'></center>  
 
 
 ---
@@ -653,7 +662,7 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 - 初始先验分布是 $\text{Beta}(70, 30)$，通过累积数据可以直接计算出后验分布为：  
 
 $$  
-\pi | (Y = 231) \sim \text{Beta}(70 + 231, 30 + 385 - 231) = \text{Beta}(301, 184)  
+\theta | (Y = 231) \sim \text{Beta}(70 + 231, 30 + 385 - 231) = \text{Beta}(301, 184)  
 $$  
 
 
@@ -789,28 +798,24 @@ Q: 这里与我们在研究中所反对的“收集数据直到$p$值显著为�
 - 而根据(Evans et al., 2020)的实验结果，我们发现其中一个被试在随机点的一致性为5%时，个体的正确率约为60%。  
 
 
-
 ---
 
-<center><img src='https://cdn.kesci.com/upload/skeayxhg1s.png?imageView2/0/w/960/h/960' style='height:360px;'></center>  
 
+<center><img src='figs/lec4/fig1_lrg.jpg' style='height:480px;'></center>  
 
-
----
-
-> Shooshtari, S. V., Sadrabadi, J. E., Azizi, Z., & Ebrahimpour, R. (2019). Confidence representation of perceptual decision by EEG and eye data in a random dot motion task. Neuroscience, 406, 510–527. https://doi.org/10.1016/j.neuroscience.2019.03.031  
-> Evans, N. J., Hawkins, G. E., & Brown, S. D. (2020). The role of passing time in decision-making. Journal of Experimental Psychology: Learning, Memory, and Cognition, 46(2), 316–326. https://doi.org/10.1037/xlm0000725 
-
+> Shooshtari, et al (2019). *Neuroscience*, doi:10.1016/j.neuroscience.2019.03.031  
+> Evans, et al., (2020). *Journal of Experimental Psychology: Learning, Memory, and Cognition*, doi: 10.1037/xlm0000725 
+ 
 
 ---
 
 本节课我们考虑如下三种不同的先验分布：  
 
-1. 第一种先验和上节课相同，认为参数值$\pi$(正确率) 在 0.7 左右，用 Beta(70,30)表示。  
+1. 第一种先验和上节课相同，认为参数值$\theta$(正确率) 在 0.7 左右，用 Beta(70,30)表示。  
    
-2. 第二种先验比较极端，认为参数值$\pi$(正确率)大于 0.6，并且其值越大约有可能，用 Beta(10,1)表示。  
+2. 第二种先验比较极端，认为参数值$\theta$(正确率)大于 0.6，并且其值越大约有可能，用 Beta(10,1)表示。  
    
-3. 最后一种“躺平”的思路认为，参数在$\pi$ 0-1 之间出现的可能性是完全相同的，即先验可以用均匀分布表示 Beta(1,1)。
+3. 最后一种“躺平”的思路认为，参数在$\theta$ 0-1 之间出现的可能性是完全相同的，即先验可以用均匀分布表示 Beta(1,1)。
 
 ```{r}
 #| include: false
@@ -856,6 +861,7 @@ plot_pdf <- function(alpha, beta, level = 0.95,
 ---
 
 ```{r}
+#| fig-height: 5
 p1 <- plot_pdf(70, 30)
 p2 <- plot_pdf(10, 1)
 p3 <- plot_pdf(1, 1)
@@ -869,16 +875,16 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 
 我们来回顾一下从先验中我们可以获得什么信息  
 
-* 在上图中，不同的先验，反映了研究者对正确率的不同信念(认为$\pi$主要集中分布在哪里)  
+* 在上图中，不同的先验，反映了研究者对正确率的不同信念(认为$\theta$主要集中分布在哪里)  
 
 * 同时，先验分布的集中程度也反映了人们对某种信念的肯定程度  
 
 
 ---
 
-比如，对于$Beta(10,1)$这个先验，$\pi$的取值集中分布在0.6-1.0这种“高正确率区域”，说明研究者对研究的正确率的信念是很肯定的。  
+比如，对于$Beta(10,1)$这个先验，$\theta$的取值集中分布在0.6-1.0这种“高正确率区域”，说明研究者对研究的正确率的信念是很肯定的。  
 
-而对于$Beta(1,1)$这个先验，$\pi$的取值均匀分布在0-1之间，研究者觉得$\pi$取任何值的可能性都是一样的，换言之他们也不知道$\pi$可能是多少。  
+而对于$Beta(1,1)$这个先验，$\theta$的取值均匀分布在0-1之间，研究者觉得$\theta$取任何值的可能性都是一样的，换言之他们也不知道$\theta$可能是多少。  
 
 以上两种先验，可被总结为**信息型先验(informative prior)** 和 **模糊型先验(vague prior)** ，其中：  
 
@@ -901,17 +907,14 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 
 我们依旧以Evans et al.（2020, Exp. 1） 的数据为例。  
 
-> Evans, N. J., Hawkins, G. E., & Brown, S. D. (2020). The role of passing time in decision-making. Journal of Experimental Psychology: Learning, Memory, and Cognition, 46(2), 316–326. https://doi.org/10.1037/xlm0000725  
+> Evans, N. J., Hawkins, G. E., & Brown, S. D. (2020). The role of passing time in decision-making. *Journal of Experimental Psychology: Learning, Memory, and Cognition, 46*(2), 316–326. https://doi.org/10.1037/xlm0000725  
 
 
 ---
 
 ```{r}
-data <- tryCatch({
-  read.csv('data/evans2020JExpPsycholLearn_exp1_full_data.csv')
-}, error = function(e) {
-  read.csv('data/evans2020JExpPsycholLearn_exp1_full_data.csv') #本地路径
-})
+# here::here() 以项目根目录为锚点，避免依赖当前工作目录
+data <- read.csv(here::here('data', 'evans2020JExpPsycholLearn_exp1_full_data.csv'))
 
 data %>% 
   group_by(subject) %>% 
@@ -942,6 +945,7 @@ head(data_subj1, 5)
 ---
 
 ```{r}
+#| fig-height: 5
 # 分别创建三个图（不包含后验）
 p1 <- bayesian_analysis_plot(70, 30, y = 152,  n = 254, plot_posterior = FALSE) +
 ggtitle(sprintf("prior:Beta(alpha=%d, beta=%d)", 70, 30)) + 
@@ -980,7 +984,7 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 
 我们可以使用公式来快速得到三种后验的表达式  
 $$  
-\pi | (Y = y) \sim \text{Beta}(\alpha + y, \, \beta + n - y)  
+\theta | (Y = y) \sim \text{Beta}(\alpha + y, \, \beta + n - y)  
 $$  
 
 <center>  
@@ -995,13 +999,14 @@ $$
 	
 在表格中，每一行展示了不同被试的先验分布和后验分布。通过结合先验和观测数据，我们得到了相应的后验 Beta 分布。  
 
-接下来，我们可以将这些分布可视化，绘制出三种后验分布的图示，以便直观展示更新后的正确率 $\pi$ 分布。  
+接下来，我们可以将这些分布可视化，绘制出三种后验分布的图示，以便直观展示更新后的正确率 $\theta$ 分布。  
  
 
 
 ---
 
 ```{r}
+#| fig-height: 5
 # 分别创建三个图（包含后验）
 p1 <- bayesian_analysis_plot(70, 30, y = 152,  n = 254, plot_posterior = TRUE) +
   ggtitle(sprintf("prior:Beta(alpha=%d, beta=%d)", 70, 30)) + 
@@ -1039,10 +1044,10 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 我们关注信息型先验和模糊型先验下的后验有什么区别：  
 
 1. **模糊型先验下**：  
-   - 如果**研究者对正确率没有明确预期**，后验分布几乎完全由数据（似然分布）决定。由于模糊型先验（如 $\text{Beta}(1, 1)$）不提供关于 $\pi$ 的有效信息，后验与似然分布几乎重合。  
+   - 如果**研究者对正确率没有明确预期**，后验分布几乎完全由数据（似然分布）决定。由于模糊型先验（如 $\text{Beta}(1, 1)$）不提供关于 $\theta$ 的有效信息，后验与似然分布几乎重合。  
 
 2. **信息型先验下**：  
-   - 当**研究者对正确率有较强的信念**，后验分布依然会受到先验的显著影响。例如，使用 $\text{Beta}(10, 1)$ 作为信息型先验，后验分布会集中在 0.6 - 0.8 区域，反映了研究者对 $\pi$ 的较高信心。  
+   - 当**研究者对正确率有较强的信念**，后验分布依然会受到先验的显著影响。例如，使用 $\text{Beta}(10, 1)$ 作为信息型先验，后验分布会集中在 0.6 - 0.8 区域，反映了研究者对 $\theta$ 的较高信心。  
 
 3. **总结**：  
    - **模糊型先验**：后验主要由数据决定。  
@@ -1061,14 +1066,14 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 
 - 这种极端先验模型通常包含先验概率为零的信念。  
 
-- 例如，研究者可能对随机点运动任务的正确率持有固执的观点，坚信其正确率较低。他们可能认为 $\pi$ 的任何值在 0 到 0.25 之间都是等可能的，并坚决认为其不会超过 0.25。为了表达这种先验信念，可以采用 0 到 0.25 之间的均匀模型（uniform model）。  
+- 例如，研究者可能对随机点运动任务的正确率持有固执的观点，坚信其正确率较低。他们可能认为 $\theta$ 的任何值在 0 到 0.25 之间都是等可能的，并坚决认为其不会超过 0.25。为了表达这种先验信念，可以采用 0 到 0.25 之间的均匀模型（uniform model）。  
 
 $$  
-\pi \sim \text{Unif}(0,0.25)  
+\theta \sim \text{Unif}(0,0.25)  
 $$  
 
 $$  
-f(\pi) = 4 \; \text{ for } \pi \in [0, 0.25]  
+f(\theta) = 4 \; \text{ for } \theta \in [0, 0.25]  
 $$  
 
 现在，假设现在有人告诉实验者他做完实验后的正确率为80%，这个 80% 的数据与实验者的信念相悖。  
@@ -1076,7 +1081,9 @@ $$
 ❔问题！请根据这个数据猜测一下实验者对于随机点运动任务正确率的后验推断。  
 
 
-![](https://www.bayesrulesbook.com/bookdown_files/figure-html/ch4-stubborn-plot-1.png)
+---
+
+<center><img src='figs/lec4/ch4-stubborn-plot-1.png' style='height:420px;'></center>
 
 ```{r}
 #| include: false
@@ -1087,23 +1094,23 @@ $$
 
 ---
 
-尽管图 (c)看起来奇怪， 但它的确代表了贝叶斯模型得到数据对$\pi$的更新。  
+尽管图 (c)看起来奇怪， 但它的确代表了贝叶斯模型得到数据对$\theta$的更新。  
 
 - **后验概率模型的定义与先验概率模型的定义相同**。  
 - 也就是说，后验模型的形状继承自先验模型。  
-- 由于实验者的先验信念不存在对于随机点运动任务的信任，也就是超过 0.25 的 $\pi$ 值的概率分配为零，他们的后验模型也将随之把该范围内的所有值的概率分配为零。  
+- 由于实验者的先验信念不存在对于随机点运动任务的信任，也就是超过 0.25 的 $\theta$ 值的概率分配为零，他们的后验模型也将随之把该范围内的所有值的概率分配为零。  
 
 
 ---
 
-- 从数学上讲，对于任意的 $\pi \notin [0, 0.25]$，后验概率密度函数 $f(\pi∣y = 8) = 0$，对于任意的 $\pi \in [0, 0.25]$，有  
+- 从数学上讲，对于任意的 $\theta \notin [0, 0.25]$，后验概率密度函数 $f(\theta∣y = 8) = 0$，对于任意的 $\theta \in [0, 0.25]$，有  
 
 $$  
 \begin{split}  
-f(\pi | y=8)  
-& \propto f(\pi)L(\pi | y=8) \\  
-& = 4 \cdot \left(\!\begin{array}{c} 10 \\ 8 \end{array}\!\right) \ \pi^{8} (1-\pi)^{2} \\  
-& \propto \pi^{8} (1-\pi)^{2}. \\  
+f(\theta | y=8)  
+& \propto f(\theta)L(\theta | y=8) \\  
+& = 4 \cdot \left(\!\begin{array}{c} 10 \\ 8 \end{array}\!\right) \ \theta^{8} (1-\theta)^{2} \\  
+& \propto \theta^{8} (1-\theta)^{2}. \\  
 \end{split}  
 $$  
 
@@ -1121,6 +1128,7 @@ $$
 ---
 
 ```{r}
+#| fig-height: 5
 # 分别创建三个图（包含后验）
 p1 <- bayesian_analysis_plot(70, 30, y = 152,  n = 254, plot_posterior = TRUE) +
   ggtitle(sprintf("prior:Beta(alpha=%d, beta=%d)", 70, 30)) + 
@@ -1156,7 +1164,7 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 ---
 
 Tips：如何避免令人遗憾的先验模型  
-	- 确保对每个可能的$\pi$值都分配非零的可信度，即使这个可信度接近于零。例如，如果$\pi$是一个可以从 0 到 1 的比例，那么你的先验模型也应该在这个连续范围内进行定义。  
+	- 确保对每个可能的$\theta$值都分配非零的可信度，即使这个可信度接近于零。例如，如果$\theta$是一个可以从 0 到 1 的比例，那么你的先验模型也应该在这个连续范围内进行定义。  
 
 ![](figs/lec2/rhqcb9gji7.png){height=360} 
 
@@ -1222,7 +1230,8 @@ Tips：如何避免令人遗憾的先验模型
 | **实验重复性假设**：推断基于实验的假想重复性              | **逐步积累信息**：通过结合新数据不断更新和完善假设     |  
 | **适应性**：实验设计固定，不能在中途更新或调整             | **适应性**：可以灵活调整试验设计和决策，如自适应试验   |  
 
-来源：  
+来源：
+
 > Goligher, E. C., Heath, A., & Harhay, M. O. (2024). Bayesian statistics for clinical research. *The Lancet, 404*(10457), 1067-1076.
 
 
@@ -1248,6 +1257,7 @@ Tips：如何避免令人遗憾的先验模型
 ---
 
 ```{r}
+#| fig-height: 5
 # 分别创建九个图（包含后验）
 p1 <- bayesian_analysis_plot(70, 30, y = 77,  n = 128, plot_posterior = TRUE) +
   ggtitle(sprintf("Beta(alpha=%d, beta=%d)", 70, 30)) + 
@@ -1355,8 +1365,8 @@ gridExtra::grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, ncol = 3)
 
 练习 4.1（将先验与描述配对）。  
 
-下面列出了五种不同的π的先验模型。  
-请用以下描述之一标记每个先验：有些偏向 $\pi$ < 0.5，有些强烈偏向$\pi$ < 0.5，有些将$\pi$置于0.5中心，有些偏向$\pi$ > 0.5，有些强烈偏向$\pi$ > 0.5。  
+下面列出了五种不同的先验模型。  
+请用以下描述之一标记每个先验：有些偏向 $\theta$ < 0.5，有些强烈偏向$\theta$ < 0.5，有些将$\theta$置于0.5中心，有些偏向$\theta$ > 0.5，有些强烈偏向$\theta$ > 0.5。  
 - a) Beta(1.8,1.8)  
 - b) Beta(3,2)  
 - c) Beta(1,10)  
@@ -1370,124 +1380,13 @@ gridExtra::grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, ncol = 3)
 练习 4.2（将图形与代码配对）。  
 
 下面的绘图函数更可能使用了哪些参数生成了下面的图形？  
-![](https://www.bayesrulesbook.com/bookdown_files/figure-html/unnamed-chunk-142-1.png)  
+![](figs/lec4/unnamed-chunk-142-1.png){width=48%}  
 - a) $\alpha$ = 2, $\beta$ = 2, y = 8, n = 11  
 - b) $\alpha$ = 2, $\beta$ = 2, y = 3, n = 11  
 - c) $\alpha$ = 3, $\beta$ = 8, y = 2, n = 6  
 - d) $\alpha$ = 3, $\beta$ = 8, y = 4, n = 6  
 - e) $\alpha$ = 3, $\beta$ = 8, y = 2, n = 4  
 - f) $\alpha$ = 8, $\beta$ = 3, y = 2, n = 4
-
-
----
-
-```{r}
-bayesian_analysis_plot <- function(
-    alpha, beta, y, n,
-    plot_prior      = TRUE,
-    plot_likelihood = TRUE,
-    plot_posterior  = TRUE,
-    xlabel          = expression("ACC" ~ pi),
-    show_legend     = TRUE
-) {
-  
-  # 图例位置
-  legend_loc <- c(0.005, 0.995)  # 左上角
-  
-  # 先验分布
-  if (plot_prior) {
-    x_prior <- seq(qbeta(1e-4, alpha, beta), qbeta(1 - 1e-4, alpha, beta), length.out = 100)
-    y_prior <- dbeta(x_prior, alpha, beta)
-    prior_df <- data.frame(x = x_prior, y = y_prior, dist = "Prior")
-  }
-  
-  # 似然分布
-  if (plot_likelihood) {
-    x_like <- seq(0, 1, length.out = 1000)
-    y_like <- dbeta(x_like, y + 1, n - y + 1)
-    like_df <- data.frame(x = x_like, y = y_like, dist = "Likelihood")
-  }
-  
-  # 后验分布
-  if (plot_posterior) {
-    a_post <- alpha + y
-    b_post <- beta + n - y
-    x_post <- seq(qbeta(1e-4, a_post, b_post), qbeta(1 - 1e-4, a_post, b_post), length.out = 100)
-    y_post <- dbeta(x_post, a_post, b_post)
-    post_df <- data.frame(x = x_post, y = y_post, dist = "Posterior")
-  }
-  
-  # 合并数据 
-  plot_data <- do.call(rbind, Filter(Negate(is.null), list(
-    if (plot_prior)      transform(prior_df, dist = "prior")      else NULL,
-    if (plot_likelihood) transform(like_df,  dist = "likelihood") else NULL,
-    if (plot_posterior)  transform(post_df,  dist = "posterior")  else NULL
-  )))
-  plot_data$dist <- factor(plot_data$dist, c("prior","likelihood","posterior"))
-  
-  # 作图
-  cols_fill <- c(prior="#f0e442", likelihood="#0071b2", posterior="#009e74")
-  present   <- intersect(c("prior","likelihood","posterior"), unique(plot_data$dist))
-  legend_levels <- as.vector(rbind(paste0(present, "_line"),
-                                   paste0(present, "_fill")))
-
-  labs_all <- setNames(c(
-    sprintf("Beta(alpha=%d, beta=%d)", alpha, beta),          "Prior",
-    sprintf("Binomial(n=%d, p=%.2g)", n, y/n),                "Likelihood",
-    sprintf("Beta(alpha=%d, beta=%d)", alpha+y, beta+n-y),    "Posterior"
-  ), c("prior_line","prior_fill","likelihood_line","likelihood_fill",
-       "posterior_line","posterior_fill"))[legend_levels]
-
-  plot_data$legend_line <- factor(paste0(plot_data$dist, "_line"), levels = legend_levels)
-  plot_data$legend_fill <- factor(paste0(plot_data$dist, "_fill"), levels = legend_levels)
-
-  p <- ggplot2::ggplot(plot_data, ggplot2::aes(x, y)) +
-    ggplot2::geom_area(ggplot2::aes(fill  = legend_fill),
-                       alpha = 0.7, position = "identity", colour = NA) +
-    ggplot2::geom_line(ggplot2::aes(color = legend_line), linewidth = 1.2, lineend = "round", linejoin = "round") +
-    ggplot2::labs(x = xlabel, y = "Density") +
-    ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0)) +
-    
-    ggplot2::scale_fill_manual(
-      name   = NULL,
-      values = setNames(ifelse(grepl("_fill$", legend_levels),
-                               cols_fill[sub("_fill$", "", legend_levels)], NA),
-                        legend_levels),
-      breaks = legend_levels,
-      labels = labs_all,
-      drop   = FALSE
-    ) +
-    ggplot2::scale_color_manual(
-      name   = NULL,
-      values = setNames(ifelse(grepl("_line$", legend_levels), "black", NA),
-                        legend_levels),
-      breaks = legend_levels,
-      labels = labs_all,
-      drop   = FALSE
-    ) +
-    ggplot2::guides(
-      fill  = ggplot2::guide_legend(order = 1, byrow = TRUE),
-      color = ggplot2::guide_legend(order = 1, byrow = TRUE)
-    ) +
-    papaja::theme_apa()+ 
-    ggplot2::theme(
-      legend.margin = margin(t = 2, r = 4, b = 2, l = 4, unit = "pt"),
-      legend.background    = element_rect(fill = "transparent", colour = NA, linewidth = 0.6),
-      legend.box.background= element_rect(fill = "transparent", colour = "grey", linewidth = 0.6),
-      legend.key           = element_rect(fill = "transparent", colour = NA),
-      axis.text.y  = ggplot2::element_blank(),
-      axis.ticks.y = ggplot2::element_blank(),
-      axis.title.y = ggplot2::element_blank(),
-      axis.text.x  = ggplot2::element_text(size = 12), 
-      legend.box = "vertical",
-      legend.position             = "inside",
-      legend.position.inside      = legend_loc,
-      legend.justification.inside = c(0, 1)
-    )
-  
-  return(p)
-}
-```
 
 
 ---
@@ -1555,7 +1454,7 @@ bayesian_analysis_plot(alpha, beta, y, n)
 由于后验分布属于beta分布，因此它的平均值可以写成：  
 
 $$  
-E(\pi | Y=y)  = \frac{\alpha + y}{\alpha + \beta + n}  .  
+E(\theta | Y=y)  = \frac{\alpha + y}{\alpha + \beta + n}  .  
 $$  
 
 
@@ -1565,11 +1464,11 @@ $$
 我们可以将$\frac{\alpha + y}{\alpha + \beta + n}$拆成以下两部分  
 
 $$  
-E(\pi | Y=y)  
+E(\theta | Y=y)  
 = \frac{\alpha}{\alpha + \beta + n} + \frac{y}{\alpha + \beta + n}  \\  
 = \frac{\alpha}{\alpha + \beta + n}\cdot\frac{\alpha + \beta}{\alpha + \beta} + \frac{y}{\alpha + \beta + n}\cdot\frac{n}{n}  \\  
 = \frac{\alpha + \beta}{\alpha + \beta + n}\cdot\frac{\alpha}{\alpha + \beta} + \frac{n}{\alpha + \beta + n}\cdot\frac{y}{n}  \\  
-= \frac{\alpha + \beta}{\alpha + \beta + n}\cdot E(\pi) + \frac{n}{\alpha + \beta + n}\cdot\frac{y}{n}  .  \\  
+= \frac{\alpha + \beta}{\alpha + \beta + n}\cdot E(\theta) + \frac{n}{\alpha + \beta + n}\cdot\frac{y}{n}  .  \\  
 $$  
 
 $$  
@@ -1606,4 +1505,4 @@ $$
 
 附录：  
 
-本课的Python代码与R代码为单独的代码脚本，见：https://github.com/hcp4715/psybayesian
+本课的Python代码与R代码为单独的代码脚本，见：hhttps://github.com/hcp4715/psybayesian/blob/master/lec4.py

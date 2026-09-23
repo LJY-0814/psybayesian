@@ -201,7 +201,7 @@
 
 <section id="title-slide" class="quarto-title-block center">
   <h1 class="title">高级心理统计 · 第4讲</h1>
-  <p class="subtitle">Balance and Sequentiality in Bayesian Analyses</p>
+  <p class="subtitle">《贝叶斯统计与应用》 · Balance and Sequentiality in Bayesian Analyses</p>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -220,6 +220,13 @@
 <p>在前面的课程中，我们使用几个简单的情况来帮助大家建立关于贝叶斯推断的直觉，这些情境包括单一事件、离散变量和连续变量。</p>
 <p>这些情境可以总结如下：</p>
 <table class="caption-top">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 23%">
+<col style="width: 18%">
+<col style="width: 24%">
+<col style="width: 22%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>知识点</th>
@@ -232,15 +239,15 @@
 <tbody>
 <tr class="odd">
 <td><strong>单个事件</strong></td>
-<td>一个使用特定语言风格的心理学实验被成功重复出来的可能性</td>
-<td><a href="https://doi.org/10.1126/science.aac4716">OSC2015</a>的结果</td>
-<td><a href="https://doi.org/10.1177/09567976241254037">Herzenstein et al 2024</a>年的数据</td>
-<td>可视化的方式 + 简单计算</td>
+<td>袋子里四个小球中有几个是蓝色</td>
+<td>均匀的可能性</td>
+<td>画出各种可能组合的全部路径</td>
+<td>根据观测数据“消除”不可能路径</td>
 </tr>
 <tr class="even">
 <td><strong>离散变量</strong></td>
 <td>多次试验(多次进行重复实验)的成功率</td>
-<td>人为分配的三种成功率(0.2, 0.5, 0.8)和它们出现的可能性</td>
+<td>指定的三种成功率(0.2, 0.5, 0.8)及其可能性</td>
 <td>进行重复后的结果在<strong>三种</strong>成功率下出现的可能性</td>
 <td>简单的手动计算</td>
 </tr>
@@ -248,7 +255,7 @@
 <td><strong>连续变量</strong></td>
 <td>多次试验(多次进行重复实验)的正确率</td>
 <td>符合正确率(0~1)数据特点和先验经验的概率分布</td>
-<td>进行重复后的结果在<strong>所有</strong>成功率/正确率下出现的可能性</td>
+<td>50个试次中正确30次在<strong>所有可能</strong>正确率下出现的可能性</td>
 <td>已被证明的统计学公式</td>
 </tr>
 </tbody>
@@ -268,28 +275,20 @@
 </li>
 <li>根据正确率的数据，可以使用心理物理曲线描述运动强度（点的一致性百分比）与决策正确率之间的关系。</li>
 </ul>
+<div class="columns">
+<div class="column" style="width:50%;">
 <center>
-<table>
-<tbody><tr>
-<td>
-<img src="https://cdn.kesci.com/upload/sjwnyt1yq4.gif?imageView2/0/w/400/h/400" alt="">
-</td>
-<td>
-<img src="https://cdn.kesci.com/upload/sjzjcgwjrm.png?imageView2/0/w/400/h/400" alt="">
-</td>
-</tr>
-<tr>
-<td>
-一致性60%
-</td>
-<td>
-正确率与任务难度
-</td>
-</tr>
-</tbody></table>
+<p><img src="figs/lec3/rdk_10.gif" style="height:360px;"></p>
+一致性 10%
 </center>
+</div><div class="column" style="width:50%;">
+<center>
+<p><img src="figs/lec3/rdk_60.gif" style="height:360px;"></p>
+一致性 60%
+</center>
+</div></div>
 <blockquote>
-<p>Shooshtari, S. V., Sadrabadi, J. E., Azizi, Z., &amp; Ebrahimpour, R. (2018). Confidence representation of perceptual decision by EEG and eye data in a random dot motion task. <em>Neuroscience</em>, 406, 510–527. https://doi.org/10.1016/j.neuroscience.2019.03.031</p>
+<p>Shooshtari, S. V., Sadrabadi, J. E., Azizi, Z., &amp; Ebrahimpour, R. (2019). <em>Neuroscience</em>, 406, 510-527. doi: 10.1016/j.neuroscience.2019.03.031</p>
 </blockquote>
 </section>
 <section class="slide level2">
@@ -308,8 +307,10 @@
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="" aria-label="1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/evans2020JExpPsycholLearn_exp1_full_data.csv"</span>)</span>
-<span id="cb1-2"><a href="" aria-label="2"></a><span class="fu">cat</span>(<span class="st">"被试数量："</span>, <span class="fu">length</span>(<span class="fu">unique</span>(data<span class="sc">$</span>subject)), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="" aria-label="1"></a><span class="co"># here::here() 以项目根目录为锚点，避免依赖当前工作目录</span></span>
+<span id="cb1-2"><a href="" aria-label="2"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">'data'</span>, <span class="st">'evans2020JExpPsycholLearn_exp1_full_data.csv'</span>))</span>
+<span id="cb1-3"><a href="" aria-label="3"></a></span>
+<span id="cb1-4"><a href="" aria-label="4"></a><span class="fu">cat</span>(<span class="st">"被试数量："</span>, <span class="fu">length</span>(<span class="fu">unique</span>(data<span class="sc">$</span>subject)), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>被试数量： 57 </code></pre>
@@ -433,31 +434,31 @@
 <section class="slide level2">
 
 <h3 id="回顾-beta-binomial模型">回顾： Beta-Binomial模型</h3>
-<p>我们的先验分布为<span class="math inline">\(Beta(70, 30)\)</span>，那么编号为“82111”的被试在253个试次中，有152次判断为正确的可能性（这节课中我们假设正确率为 <span class="math inline">\(\pi\)</span> ），这个似然函数可以用<strong>二项分布</strong>来表示：</p>
+<p>我们的先验分布为<span class="math inline">\(Beta(70, 30)\)</span>，那么编号为“82111”的被试在253个试次中，有152次判断为正确的可能性（这节课中我们假设正确率为 <span class="math inline">\(\theta\)</span> ），这个似然函数可以用<strong>二项分布</strong>来表示：</p>
 <p><span class="math display">\[  
-Y | \pi  \sim \text{Bin}(n, \pi)  
+Y | \theta  \sim \text{Bin}(n, \theta)  
 \]</span></p>
 <p>似然函数为：</p>
 <p><span class="math display">\[  
-f(y|\pi) = P(Y=y | \pi) = \binom{253}{152} \pi^{152} (1-\pi)^{101}  
+f(y|\theta) = P(Y=y | \theta) = \binom{253}{152} \theta^{152} (1-\theta)^{101}  
 \]</span></p>
 </section>
 <section class="slide level2">
 
-<p>与上节课相同，我们的正确率 <span class="math inline">\(\pi\)</span> 服从<span class="math inline">\(Beta\)</span> 分布，似然函数服从<strong>二项分布</strong>：</p>
+<p>与上节课相同，我们的正确率 <span class="math inline">\(\theta\)</span> 服从<span class="math inline">\(Beta\)</span> 分布，似然函数为<strong>二项分布</strong>：</p>
 <p><span class="math display">\[  
-Y | \pi  \sim \text{Bin}(n, \, \pi)  
+Y | \theta  \sim \text{Bin}(n, \, \theta)  
 \]</span></p>
 <p><span class="math display">\[  
-\pi  \sim \text{Beta}(\alpha, \, \beta)  
+\theta  \sim \text{Beta}(\alpha, \, \beta)  
 \]</span></p>
 <p>从上一节课我们知道，在这种情况下，<strong>后验分布</strong>仍然是 <span class="math inline">\(Beta\)</span> 分布，并且可以表示为：</p>
 <p><span class="math display">\[  
-\pi | (Y = y) \sim \text{Beta}(\alpha + y, \, \beta + n - y)  
+\theta | (Y = y) \sim \text{Beta}(\alpha + y, \, \beta + n - y)  
 \]</span></p>
 <p>因此，编号为“82111”的被试在253个试次下，有152次判断为正确的情况时，后验分布可以写为：</p>
 <p><span class="math display">\[  
-\pi | (Y = 152) \sim \text{Beta}(\alpha + 152, \, \beta + 101)  
+\theta | (Y = 152) \sim \text{Beta}(\alpha + 152, \, \beta + 101)  
 \]</span></p>
 </section>
 <section class="slide level2">
@@ -470,7 +471,7 @@ Y | \pi  \sim \text{Bin}(n, \, \pi)
 <span id="cb11-3"><a href="" aria-label="3"></a>    <span class="at">plot_prior      =</span> <span class="cn">TRUE</span>,</span>
 <span id="cb11-4"><a href="" aria-label="4"></a>    <span class="at">plot_likelihood =</span> <span class="cn">TRUE</span>,</span>
 <span id="cb11-5"><a href="" aria-label="5"></a>    <span class="at">plot_posterior  =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb11-6"><a href="" aria-label="6"></a>    <span class="at">xlabel          =</span> <span class="fu">expression</span>(<span class="st">"ACC"</span> <span class="sc">~</span> pi),</span>
+<span id="cb11-6"><a href="" aria-label="6"></a>    <span class="at">xlabel          =</span> <span class="fu">expression</span>(<span class="st">"ACC"</span> <span class="sc">~</span> theta),</span>
 <span id="cb11-7"><a href="" aria-label="7"></a>    <span class="at">show_legend     =</span> <span class="cn">TRUE</span></span>
 <span id="cb11-8"><a href="" aria-label="8"></a>) {</span>
 <span id="cb11-9"><a href="" aria-label="9"></a>  </span>
@@ -578,27 +579,20 @@ Y | \pi  \sim \text{Bin}(n, \, \pi)
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="" aria-label="1"></a><span class="fu">options</span>(<span class="at">repr.plot.width=</span><span class="dv">10</span>,<span class="at">repr.plot.height=</span><span class="dv">5</span>)</span>
-<span id="cb12-2"><a href="" aria-label="2"></a>fig <span class="ot">&lt;-</span> <span class="fu">bayesian_analysis_plot</span>(<span class="dv">70</span>, <span class="dv">30</span>, <span class="dv">152</span>, <span class="dv">253</span>) <span class="sc">+</span></span>
-<span id="cb12-3"><a href="" aria-label="3"></a>  ggplot2<span class="sc">::</span><span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.9</span>))  </span>
-<span id="cb12-4"><a href="" aria-label="4"></a><span class="fu">print</span>(fig)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="" aria-label="1"></a>fig <span class="ot">&lt;-</span> <span class="fu">bayesian_analysis_plot</span>(<span class="dv">70</span>, <span class="dv">30</span>, <span class="dv">152</span>, <span class="dv">253</span>) <span class="sc">+</span></span>
+<span id="cb12-2"><a href="" aria-label="2"></a>  ggplot2<span class="sc">::</span><span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.9</span>))  </span>
+<span id="cb12-3"><a href="" aria-label="3"></a><span class="fu">print</span>(fig)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure>
-<p><img data-src="assets/figs/lec4/unnamed-chunk-6-1.png" width="1440"></p>
-</figure>
+
 </div>
-</div>
-</div>
-</section>
+<img data-src="assets/figs/lec4/unnamed-chunk-6-1.png" width="960" class="r-stretch"></section>
 <section class="slide level2">
 
 <p>在看过单个被试的后验分布后，你或许会想，不同输入数据下后验分布有何区别？</p>
 <p>通过贝叶斯公式我们知道，后验的分布主要取决于先验与似然；</p>
 <p>–&gt; <strong>不同的数据意味着不同的似然</strong></p>
 <p><span class="math display">\[  
-f(\pi | y) = \frac{f(\pi)L(\pi|y)}{f(y)} \propto f(\pi)L(\pi|y)  
+f(\theta | y) = \frac{f(\theta)L(\theta|y)}{f(y)} \propto f(\theta)L(\theta|y)  
 \]</span></p>
 <p>接下来我们将看到，不同的似然对后验分布的影响。</p>
 </section>
@@ -630,11 +624,11 @@ f(\pi | y) = \frac{f(\pi)L(\pi|y)}{f(y)} \propto f(\pi)L(\pi|y)
 <p><strong>第1个 block的情况</strong>:</p>
 <p>在 a 的情况下（128次试次，77次判断为正确），似然函数为：</p>
 <p><span class="math display">\[  
-f(y \mid \pi) = P(Y = 77 \mid \pi) = \binom{128}{77} \pi^{77} (1 - \pi)^{128 - 77}  
+f(y \mid \theta) = P(Y = 77 \mid \theta) = \binom{128}{77} \theta^{77} (1 - \theta)^{128 - 77}  
 \]</span></p>
 <p>即：</p>
 <p><span class="math display">\[  
-f(y \mid \pi) = \binom{128}{77} \pi^{77} (1 - \pi)^{51}  
+f(y \mid \theta) = \binom{128}{77} \theta^{77} (1 - \theta)^{51}  
 \]</span></p>
 </section>
 <section class="slide level2">
@@ -642,11 +636,11 @@ f(y \mid \pi) = \binom{128}{77} \pi^{77} (1 - \pi)^{51}
 <p><strong>前2个 block的情况</strong>:</p>
 <p>在 a+b 的情况下（254次试次，152次判断为正确），似然函数为：</p>
 <p><span class="math display">\[  
-f(y \mid \pi) = P(Y = 152 \mid \pi) = \binom{254}{152} \pi^{152} (1 - \pi)^{254 - 152}  
+f(y \mid \theta) = P(Y = 152 \mid \theta) = \binom{254}{152} \theta^{152} (1 - \theta)^{254 - 152}  
 \]</span></p>
 <p>即：</p>
 <p><span class="math display">\[  
-f(y \mid \pi) = \binom{254}{152} \pi^{152} (1 - \pi)^{102}  
+f(y \mid \theta) = \binom{254}{152} \theta^{152} (1 - \theta)^{102}  
 \]</span></p>
 </section>
 <section class="slide level2">
@@ -654,11 +648,11 @@ f(y \mid \pi) = \binom{254}{152} \pi^{152} (1 - \pi)^{102}
 <p><strong>全部3个 block的情况</strong>:</p>
 <p>在 a+b+c 下（385次试次，231次判断为正确），似然函数为：</p>
 <p><span class="math display">\[  
-f(y \mid \pi) = P(Y = 231 \mid \pi) = \binom{385}{231} \pi^{231} (1 - \pi)^{385 - 231}  
+f(y \mid \theta) = P(Y = 231 \mid \theta) = \binom{385}{231} \theta^{231} (1 - \theta)^{385 - 231}  
 \]</span></p>
 <p>即：</p>
 <p><span class="math display">\[  
-f(y \mid \pi) = \binom{385}{231} \pi^{231} (1 - \pi)^{154}  
+f(y \mid \theta) = \binom{385}{231} \theta^{231} (1 - \theta)^{154}  
 \]</span></p>
 </section>
 <section class="slide level2">
@@ -698,15 +692,9 @@ f(y \mid \pi) = \binom{385}{231} \pi^{231} (1 - \pi)^{154}
 <span id="cb13-30"><a href="" aria-label="30"></a></span>
 <span id="cb13-31"><a href="" aria-label="31"></a>gridExtra<span class="sc">::</span><span class="fu">grid.arrange</span>(p1, p2, p3, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure>
-<p><img data-src="assets/figs/lec4/unnamed-chunk-7-1.png" width="1440"></p>
-</figure>
+
 </div>
-</div>
-</div>
-</section>
+<img data-src="assets/figs/lec4/unnamed-chunk-7-1.png" width="960" class="r-stretch"></section>
 <section class="slide level2">
 
 <p>🤔<strong>思考时间</strong>：</p>
@@ -751,22 +739,16 @@ f(y \mid \pi) = \binom{385}{231} \pi^{231} (1 - \pi)^{154}
 <span id="cb14-28"><a href="" aria-label="28"></a></span>
 <span id="cb14-29"><a href="" aria-label="29"></a>gridExtra<span class="sc">::</span><span class="fu">grid.arrange</span>(p1, p2, p3, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure>
-<p><img data-src="assets/figs/lec4/unnamed-chunk-8-1.png" width="1440"></p>
-</figure>
+
 </div>
-</div>
-</div>
-</section>
+<img data-src="assets/figs/lec4/unnamed-chunk-8-1.png" width="960" class="r-stretch"></section>
 <section class="slide level2">
 
-<p><em>注意：在似然中，y轴为<span class="math inline">\(f(y|\pi)\)</span>，表示在特定的<span class="math inline">\(\pi\)</span>值下产生当前数据的相对可能性。</em></p>
+<p><em>注意：在似然中，y轴为<span class="math inline">\(f(y|\theta)\)</span>，表示在特定的<span class="math inline">\(\theta\)</span>值下产生当前数据的相对可能性。</em></p>
 <ul>
 <li><strong>1个 block的情况：进行了 128 次试次，其中有 77 次（60%）判断为正确</strong>
 <ul>
-<li>样本量较小，似然分布较宽，意味着观测数据对正确率<span class="math inline">\(\pi\)</span>的约束不强，反映出不确定性较高。</li>
+<li>样本量较小，似然分布较宽，意味着观测数据对正确率<span class="math inline">\(\theta\)</span>的约束不强，反映出不确定性较高。</li>
 </ul></li>
 <li><strong>2个 block的情况：一共进行了 254 次试次，其中有 152 次（60%）判断为正确</strong>
 <ul>
@@ -785,7 +767,7 @@ f(y \mid \pi) = \binom{385}{231} \pi^{231} (1 - \pi)^{154}
 <ol type="1">
 <li><strong>当似然反映的信息越集中时，它对后验的影响越大</strong><br>
 </li>
-<li>样本量越大，似然对正确率<span class="math inline">\(\pi\)</span>的约束力越强，后验分布也会更加集中于观测结果，这使得我们对<span class="math inline">\(\pi\)</span>的推断更为确定。</li>
+<li>样本量越大，似然对正确率<span class="math inline">\(\theta\)</span>的约束力越强，后验分布也会更加集中于观测结果，这使得我们对<span class="math inline">\(\theta\)</span>的推断更为确定。</li>
 </ol></li>
 </ul>
 </section>
@@ -832,13 +814,13 @@ f(y \mid \pi) = \binom{385}{231} \pi^{231} (1 - \pi)^{154}
 </section>
 <section class="slide level2">
 
-<p>在贝叶斯框架中，随着更多数据的到来，数据对后验的影响逐渐增加。相对地，先验信念的影响逐渐减小。总体上，数据的增加使得我们对正确率 <span class="math inline">\(\pi\)</span> 的推断更为精确。</p>
+<p>在贝叶斯框架中，随着更多数据的到来，数据对后验的影响逐渐增加。相对地，先验信念的影响逐渐减小。总体上，数据的增加使得我们对正确率 <span class="math inline">\(\theta\)</span> 的推断更为精确。</p>
 </section>
 <section class="slide level2">
 
 <h5 id="随着数据的影响后验如何演变">随着数据的影响，后验如何演变？</h5>
 <p>在随机点运动任务的例子中，我们逐步观察到随着样本量的增加：<br>
-- <strong>先验信念的影响逐渐减弱</strong>：最初的先验分布提供了对正确率 <span class="math inline">\(\pi\)</span> 的初步信念，但随着更多数据被观察到，先验对后验的影响逐渐减弱。<br>
+- <strong>先验信念的影响逐渐减弱</strong>：最初的先验分布提供了对正确率 <span class="math inline">\(\theta\)</span> 的初步信念，但随着更多数据被观察到，先验对后验的影响逐渐减弱。<br>
 - <strong>数据的主导地位逐渐增强</strong>：随着实验试次的增多，似然函数变得越来越窄，表示观测数据对正确率的推断更加集中和精确。</p>
 </section>
 <section class="slide level2">
@@ -895,6 +877,9 @@ f(y \mid \pi) = \binom{385}{231} \pi^{231} (1 - \pi)^{154}
 <blockquote>
 <p>动态演示：后验随着新数据逐步更新（课堂演示环节）。</p>
 </blockquote>
+<center>
+<img src="figs/lec4/skex9x185z_2x.gif" style="height:360px;">
+</center>
 </section>
 <section class="slide level2">
 
@@ -1007,7 +992,7 @@ f(y \mid \pi) = \binom{385}{231} \pi^{231} (1 - \pi)^{154}
 <li>初始先验分布是 <span class="math inline">\(\text{Beta}(70, 30)\)</span>，通过累积数据可以直接计算出后验分布为：</li>
 </ul>
 <p><span class="math display">\[  
-\pi | (Y = 231) \sim \text{Beta}(70 + 231, 30 + 385 - 231) = \text{Beta}(301, 184)  
+\theta | (Y = 231) \sim \text{Beta}(70 + 231, 30 + 385 - 231) = \text{Beta}(301, 184)  
 \]</span></p>
 <p>根据累积数据依赖性，后验分布只依赖于观测数据的总量，而不关心观测的顺序，无论观测顺序如何，最终的后验分布都为<span class="math inline">\(\text{Beta}(301, 184)\)</span>。</p>
 </section>
@@ -1109,23 +1094,20 @@ f(\theta \mid y_1, y_2) = \frac{f(\theta) L(\theta \mid y_1) L(\theta \mid y_2)}
 <section class="slide level2">
 
 <center>
-<img src="https://cdn.kesci.com/upload/skeayxhg1s.png?imageView2/0/w/960/h/960" style="height:360px;">
+<img src="figs/lec4/fig1_lrg.jpg" style="height:480px;">
 </center>
-</section>
-<section class="slide level2">
-
 <blockquote>
-<p>Shooshtari, S. V., Sadrabadi, J. E., Azizi, Z., &amp; Ebrahimpour, R. (2019). Confidence representation of perceptual decision by EEG and eye data in a random dot motion task. Neuroscience, 406, 510–527. https://doi.org/10.1016/j.neuroscience.2019.03.031<br>
-Evans, N. J., Hawkins, G. E., &amp; Brown, S. D. (2020). The role of passing time in decision-making. Journal of Experimental Psychology: Learning, Memory, and Cognition, 46(2), 316–326. https://doi.org/10.1037/xlm0000725</p>
+<p>Shooshtari, et al (2019). <em>Neuroscience</em>, doi:10.1016/j.neuroscience.2019.03.031<br>
+Evans, et al., (2020). <em>Journal of Experimental Psychology: Learning, Memory, and Cognition</em>, doi: 10.1037/xlm0000725</p>
 </blockquote>
 </section>
 <section class="slide level2">
 
 <p>本节课我们考虑如下三种不同的先验分布：</p>
 <ol type="1">
-<li><p>第一种先验和上节课相同，认为参数值<span class="math inline">\(\pi\)</span>(正确率) 在 0.7 左右，用 Beta(70,30)表示。</p></li>
-<li><p>第二种先验比较极端，认为参数值<span class="math inline">\(\pi\)</span>(正确率)大于 0.6，并且其值越大约有可能，用 Beta(10,1)表示。</p></li>
-<li><p>最后一种“躺平”的思路认为，参数在<span class="math inline">\(\pi\)</span> 0-1 之间出现的可能性是完全相同的，即先验可以用均匀分布表示 Beta(1,1)。</p></li>
+<li><p>第一种先验和上节课相同，认为参数值<span class="math inline">\(\theta\)</span>(正确率) 在 0.7 左右，用 Beta(70,30)表示。</p></li>
+<li><p>第二种先验比较极端，认为参数值<span class="math inline">\(\theta\)</span>(正确率)大于 0.6，并且其值越大约有可能，用 Beta(10,1)表示。</p></li>
+<li><p>最后一种“躺平”的思路认为，参数在<span class="math inline">\(\theta\)</span> 0-1 之间出现的可能性是完全相同的，即先验可以用均匀分布表示 Beta(1,1)。</p></li>
 </ol>
 </section>
 <section class="slide level2">
@@ -1138,28 +1120,22 @@ Evans, N. J., Hawkins, G. E., &amp; Brown, S. D. (2020). The role of passing tim
 <span id="cb16-3"><a href="" aria-label="3"></a>p3 <span class="ot">&lt;-</span> <span class="fu">plot_pdf</span>(<span class="dv">1</span>, <span class="dv">1</span>)</span>
 <span id="cb16-4"><a href="" aria-label="4"></a>gridExtra<span class="sc">::</span><span class="fu">grid.arrange</span>(p1, p2, p3, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure>
-<p><img data-src="assets/figs/lec4/unnamed-chunk-11-1.png" width="1440"></p>
-</figure>
+
 </div>
-</div>
-</div>
-</section>
+<img data-src="assets/figs/lec4/unnamed-chunk-11-1.png" width="960" class="r-stretch"></section>
 <section class="slide level2">
 
 <p><strong>不同类型的先验</strong></p>
 <p>我们来回顾一下从先验中我们可以获得什么信息</p>
 <ul>
-<li><p>在上图中，不同的先验，反映了研究者对正确率的不同信念(认为<span class="math inline">\(\pi\)</span>主要集中分布在哪里)</p></li>
+<li><p>在上图中，不同的先验，反映了研究者对正确率的不同信念(认为<span class="math inline">\(\theta\)</span>主要集中分布在哪里)</p></li>
 <li><p>同时，先验分布的集中程度也反映了人们对某种信念的肯定程度</p></li>
 </ul>
 </section>
 <section class="slide level2">
 
-<p>比如，对于<span class="math inline">\(Beta(10,1)\)</span>这个先验，<span class="math inline">\(\pi\)</span>的取值集中分布在0.6-1.0这种“高正确率区域”，说明研究者对研究的正确率的信念是很肯定的。</p>
-<p>而对于<span class="math inline">\(Beta(1,1)\)</span>这个先验，<span class="math inline">\(\pi\)</span>的取值均匀分布在0-1之间，研究者觉得<span class="math inline">\(\pi\)</span>取任何值的可能性都是一样的，换言之他们也不知道<span class="math inline">\(\pi\)</span>可能是多少。</p>
+<p>比如，对于<span class="math inline">\(Beta(10,1)\)</span>这个先验，<span class="math inline">\(\theta\)</span>的取值集中分布在0.6-1.0这种“高正确率区域”，说明研究者对研究的正确率的信念是很肯定的。</p>
+<p>而对于<span class="math inline">\(Beta(1,1)\)</span>这个先验，<span class="math inline">\(\theta\)</span>的取值均匀分布在0-1之间，研究者觉得<span class="math inline">\(\theta\)</span>取任何值的可能性都是一样的，换言之他们也不知道<span class="math inline">\(\theta\)</span>可能是多少。</p>
 <p>以上两种先验，可被总结为<strong>信息型先验(informative prior)</strong> 和 <strong>模糊型先验(vague prior)</strong> ，其中：</p>
 <p><strong>信息型先验</strong>：<br>
 - 先验分布较窄，取值范围小。</p>
@@ -1178,7 +1154,7 @@ Evans, N. J., Hawkins, G. E., &amp; Brown, S. D. (2020). The role of passing tim
 <p>在继续探究不同的先验如何影响后验之前，我们还需要一些<strong>数据</strong></p>
 <p>我们依旧以Evans et al.（2020, Exp. 1） 的数据为例。</p>
 <blockquote>
-<p>Evans, N. J., Hawkins, G. E., &amp; Brown, S. D. (2020). The role of passing time in decision-making. Journal of Experimental Psychology: Learning, Memory, and Cognition, 46(2), 316–326. https://doi.org/10.1037/xlm0000725</p>
+<p>Evans, N. J., Hawkins, G. E., &amp; Brown, S. D. (2020). The role of passing time in decision-making. <em>Journal of Experimental Psychology: Learning, Memory, and Cognition, 46</em>(2), 316–326. https://doi.org/10.1037/xlm0000725</p>
 </blockquote>
 </section>
 <section class="slide level2">
@@ -1186,17 +1162,14 @@ Evans, N. J., Hawkins, G. E., &amp; Brown, S. D. (2020). The role of passing tim
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="" aria-label="1"></a>data <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>({</span>
-<span id="cb17-2"><a href="" aria-label="2"></a>  <span class="fu">read.csv</span>(<span class="st">'data/evans2020JExpPsycholLearn_exp1_full_data.csv'</span>)</span>
-<span id="cb17-3"><a href="" aria-label="3"></a>}, <span class="at">error =</span> <span class="cf">function</span>(e) {</span>
-<span id="cb17-4"><a href="" aria-label="4"></a>  <span class="fu">read.csv</span>(<span class="st">'data/evans2020JExpPsycholLearn_exp1_full_data.csv'</span>) <span class="co">#本地路径</span></span>
-<span id="cb17-5"><a href="" aria-label="5"></a>})</span>
-<span id="cb17-6"><a href="" aria-label="6"></a></span>
-<span id="cb17-7"><a href="" aria-label="7"></a>data <span class="sc">%&gt;%</span> </span>
-<span id="cb17-8"><a href="" aria-label="8"></a>  <span class="fu">group_by</span>(subject) <span class="sc">%&gt;%</span> </span>
-<span id="cb17-9"><a href="" aria-label="9"></a>  <span class="fu">summarise</span>(<span class="at">mean_correct =</span> <span class="fu">mean</span>(correct, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb17-10"><a href="" aria-label="10"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb17-11"><a href="" aria-label="11"></a>  <span class="fu">as.data.frame</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="" aria-label="1"></a><span class="co"># here::here() 以项目根目录为锚点，避免依赖当前工作目录</span></span>
+<span id="cb17-2"><a href="" aria-label="2"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">'data'</span>, <span class="st">'evans2020JExpPsycholLearn_exp1_full_data.csv'</span>))</span>
+<span id="cb17-3"><a href="" aria-label="3"></a></span>
+<span id="cb17-4"><a href="" aria-label="4"></a>data <span class="sc">%&gt;%</span> </span>
+<span id="cb17-5"><a href="" aria-label="5"></a>  <span class="fu">group_by</span>(subject) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-6"><a href="" aria-label="6"></a>  <span class="fu">summarise</span>(<span class="at">mean_correct =</span> <span class="fu">mean</span>(correct, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-7"><a href="" aria-label="7"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb17-8"><a href="" aria-label="8"></a>  <span class="fu">as.data.frame</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>   subject mean_correct
@@ -1273,21 +1246,15 @@ Evans, N. J., Hawkins, G. E., &amp; Brown, S. D. (2020). The role of passing tim
 <span id="cb21-28"><a href="" aria-label="28"></a></span>
 <span id="cb21-29"><a href="" aria-label="29"></a>gridExtra<span class="sc">::</span><span class="fu">grid.arrange</span>(p1, p2, p3, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure>
-<p><img data-src="assets/figs/lec4/unnamed-chunk-13-1.png" width="1440"></p>
-</figure>
+
 </div>
-</div>
-</div>
-</section>
+<img data-src="assets/figs/lec4/unnamed-chunk-13-1.png" width="960" class="r-stretch"></section>
 <section class="slide level2">
 
 <p><strong>后验图示</strong></p>
 <p>我们可以使用公式来快速得到三种后验的表达式<br>
 <span class="math display">\[  
-\pi | (Y = y) \sim \text{Beta}(\alpha + y, \, \beta + n - y)  
+\theta | (Y = y) \sim \text{Beta}(\alpha + y, \, \beta + n - y)  
 \]</span></p>
 <center>
 <table class="caption-top">
@@ -1318,7 +1285,7 @@ Evans, N. J., Hawkins, G. E., &amp; Brown, S. D. (2020). The role of passing tim
 </table>
 </center>
 <p>在表格中，每一行展示了不同被试的先验分布和后验分布。通过结合先验和观测数据，我们得到了相应的后验 Beta 分布。</p>
-<p>接下来，我们可以将这些分布可视化，绘制出三种后验分布的图示，以便直观展示更新后的正确率 <span class="math inline">\(\pi\)</span> 分布。</p>
+<p>接下来，我们可以将这些分布可视化，绘制出三种后验分布的图示，以便直观展示更新后的正确率 <span class="math inline">\(\theta\)</span> 分布。</p>
 </section>
 <section class="slide level2">
 
@@ -1355,26 +1322,20 @@ Evans, N. J., Hawkins, G. E., &amp; Brown, S. D. (2020). The role of passing tim
 <span id="cb22-28"><a href="" aria-label="28"></a></span>
 <span id="cb22-29"><a href="" aria-label="29"></a>gridExtra<span class="sc">::</span><span class="fu">grid.arrange</span>(p1, p2, p3, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure>
-<p><img data-src="assets/figs/lec4/unnamed-chunk-14-1.png" width="1440"></p>
-</figure>
+
 </div>
-</div>
-</div>
-</section>
+<img data-src="assets/figs/lec4/unnamed-chunk-14-1.png" width="960" class="r-stretch"></section>
 <section class="slide level2">
 
 <p>我们关注信息型先验和模糊型先验下的后验有什么区别：</p>
 <ol type="1">
 <li><strong>模糊型先验下</strong>：
 <ul>
-<li>如果<strong>研究者对正确率没有明确预期</strong>，后验分布几乎完全由数据（似然分布）决定。由于模糊型先验（如 <span class="math inline">\(\text{Beta}(1, 1)\)</span>）不提供关于 <span class="math inline">\(\pi\)</span> 的有效信息，后验与似然分布几乎重合。</li>
+<li>如果<strong>研究者对正确率没有明确预期</strong>，后验分布几乎完全由数据（似然分布）决定。由于模糊型先验（如 <span class="math inline">\(\text{Beta}(1, 1)\)</span>）不提供关于 <span class="math inline">\(\theta\)</span> 的有效信息，后验与似然分布几乎重合。</li>
 </ul></li>
 <li><strong>信息型先验下</strong>：
 <ul>
-<li>当<strong>研究者对正确率有较强的信念</strong>，后验分布依然会受到先验的显著影响。例如，使用 <span class="math inline">\(\text{Beta}(10, 1)\)</span> 作为信息型先验，后验分布会集中在 0.6 - 0.8 区域，反映了研究者对 <span class="math inline">\(\pi\)</span> 的较高信心。</li>
+<li>当<strong>研究者对正确率有较强的信念</strong>，后验分布依然会受到先验的显著影响。例如，使用 <span class="math inline">\(\text{Beta}(10, 1)\)</span> 作为信息型先验，后验分布会集中在 0.6 - 0.8 区域，反映了研究者对 <span class="math inline">\(\theta\)</span> 的较高信心。</li>
 </ul></li>
 <li><strong>总结</strong>：
 <ul>
@@ -1392,40 +1353,45 @@ Evans, N. J., Hawkins, G. E., &amp; Brown, S. D. (2020). The role of passing tim
 <p>在贝叶斯分析中，虽然我们通常讨论有信息和无信息的先验，但有时先验选择可能会导致严重的偏离。极端固执的先验模型可能会使贝叶斯方法失去其顺序分析的优势。</p>
 <ul>
 <li><p>这种极端先验模型通常包含先验概率为零的信念。</p></li>
-<li><p>例如，研究者可能对随机点运动任务的正确率持有固执的观点，坚信其正确率较低。他们可能认为 <span class="math inline">\(\pi\)</span> 的任何值在 0 到 0.25 之间都是等可能的，并坚决认为其不会超过 0.25。为了表达这种先验信念，可以采用 0 到 0.25 之间的均匀模型（uniform model）。</p></li>
+<li><p>例如，研究者可能对随机点运动任务的正确率持有固执的观点，坚信其正确率较低。他们可能认为 <span class="math inline">\(\theta\)</span> 的任何值在 0 到 0.25 之间都是等可能的，并坚决认为其不会超过 0.25。为了表达这种先验信念，可以采用 0 到 0.25 之间的均匀模型（uniform model）。</p></li>
 </ul>
 <p><span class="math display">\[  
-\pi \sim \text{Unif}(0,0.25)  
+\theta \sim \text{Unif}(0,0.25)  
 \]</span></p>
 <p><span class="math display">\[  
-f(\pi) = 4 \; \text{ for } \pi \in [0, 0.25]  
+f(\theta) = 4 \; \text{ for } \theta \in [0, 0.25]  
 \]</span></p>
 <p>现在，假设现在有人告诉实验者他做完实验后的正确率为80%，这个 80% 的数据与实验者的信念相悖。</p>
 <p>❔问题！请根据这个数据猜测一下实验者对于随机点运动任务正确率的后验推断。</p>
-<p><img data-src="https://www.bayesrulesbook.com/bookdown_files/figure-html/ch4-stubborn-plot-1.png"></p>
 </section>
 <section class="slide level2">
 
-<p>尽管图 (c)看起来奇怪， 但它的确代表了贝叶斯模型得到数据对<span class="math inline">\(\pi\)</span>的更新。</p>
+<center>
+<img src="figs/lec4/ch4-stubborn-plot-1.png" style="height:420px;">
+</center>
+</section>
+<section class="slide level2">
+
+<p>尽管图 (c)看起来奇怪， 但它的确代表了贝叶斯模型得到数据对<span class="math inline">\(\theta\)</span>的更新。</p>
 <ul>
 <li><strong>后验概率模型的定义与先验概率模型的定义相同</strong>。<br>
 </li>
 <li>也就是说，后验模型的形状继承自先验模型。<br>
 </li>
-<li>由于实验者的先验信念不存在对于随机点运动任务的信任，也就是超过 0.25 的 <span class="math inline">\(\pi\)</span> 值的概率分配为零，他们的后验模型也将随之把该范围内的所有值的概率分配为零。</li>
+<li>由于实验者的先验信念不存在对于随机点运动任务的信任，也就是超过 0.25 的 <span class="math inline">\(\theta\)</span> 值的概率分配为零，他们的后验模型也将随之把该范围内的所有值的概率分配为零。</li>
 </ul>
 </section>
 <section class="slide level2">
 
 <ul>
-<li>从数学上讲，对于任意的 <span class="math inline">\(\pi \notin [0, 0.25]\)</span>，后验概率密度函数 <span class="math inline">\(f(\pi∣y = 8) = 0\)</span>，对于任意的 <span class="math inline">\(\pi \in [0, 0.25]\)</span>，有</li>
+<li>从数学上讲，对于任意的 <span class="math inline">\(\theta \notin [0, 0.25]\)</span>，后验概率密度函数 <span class="math inline">\(f(\theta∣y = 8) = 0\)</span>，对于任意的 <span class="math inline">\(\theta \in [0, 0.25]\)</span>，有</li>
 </ul>
 <p><span class="math display">\[  
 \begin{split}  
-f(\pi | y=8)  
-&amp; \propto f(\pi)L(\pi | y=8) \\  
-&amp; = 4 \cdot \left(\!\begin{array}{c} 10 \\ 8 \end{array}\!\right) \ \pi^{8} (1-\pi)^{2} \\  
-&amp; \propto \pi^{8} (1-\pi)^{2}. \\  
+f(\theta | y=8)  
+&amp; \propto f(\theta)L(\theta | y=8) \\  
+&amp; = 4 \cdot \left(\!\begin{array}{c} 10 \\ 8 \end{array}\!\right) \ \theta^{8} (1-\theta)^{2} \\  
+&amp; \propto \theta^{8} (1-\theta)^{2}. \\  
 \end{split}  
 \]</span></p>
 <p>这个数学结果的含义是巨大的。<br>
@@ -1471,19 +1437,13 @@ f(\pi | y=8)
 <span id="cb23-28"><a href="" aria-label="28"></a></span>
 <span id="cb23-29"><a href="" aria-label="29"></a>gridExtra<span class="sc">::</span><span class="fu">grid.arrange</span>(p1, p2, p3, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure>
-<p><img data-src="assets/figs/lec4/unnamed-chunk-16-1.png" width="1440"></p>
-</figure>
+
 </div>
-</div>
-</div>
-</section>
+<img data-src="assets/figs/lec4/unnamed-chunk-16-1.png" width="960" class="r-stretch"></section>
 <section class="slide level2">
 
 <p>Tips：如何避免令人遗憾的先验模型<br>
-- 确保对每个可能的<span class="math inline">\(\pi\)</span>值都分配非零的可信度，即使这个可信度接近于零。例如，如果<span class="math inline">\(\pi\)</span>是一个可以从 0 到 1 的比例，那么你的先验模型也应该在这个连续范围内进行定义。</p>
+- 确保对每个可能的<span class="math inline">\(\theta\)</span>值都分配非零的可信度，即使这个可信度接近于零。例如，如果<span class="math inline">\(\theta\)</span>是一个可以从 0 到 1 的比例，那么你的先验模型也应该在这个连续范围内进行定义。</p>
 <p><img data-src="figs/lec2/rhqcb9gji7.png" height="360"></p>
 </section>
 <section class="slide level2">
@@ -1584,8 +1544,10 @@ f(\pi | y=8)
 </tr>
 </tbody>
 </table>
-<p>来源：<br>
-&gt; Goligher, E. C., Heath, A., &amp; Harhay, M. O. (2024). Bayesian statistics for clinical research. <em>The Lancet, 404</em>(10457), 1067-1076.</p>
+<p>来源：</p>
+<blockquote>
+<p>Goligher, E. C., Heath, A., &amp; Harhay, M. O. (2024). Bayesian statistics for clinical research. <em>The Lancet, 404</em>(10457), 1067-1076.</p>
+</blockquote>
 </section>
 <section class="slide level2">
 
@@ -1691,15 +1653,9 @@ f(\pi | y=8)
 <span id="cb24-80"><a href="" aria-label="80"></a></span>
 <span id="cb24-81"><a href="" aria-label="81"></a>gridExtra<span class="sc">::</span><span class="fu">grid.arrange</span>(p1, p2, p3, p4, p5, p6, p7, p8, p9, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure>
-<p><img data-src="assets/figs/lec4/unnamed-chunk-17-1.png" width="1440"></p>
-</figure>
+
 </div>
-</div>
-</div>
-</section>
+<img data-src="assets/figs/lec4/unnamed-chunk-17-1.png" width="960" class="r-stretch"></section>
 <section class="slide level2">
 
 <ul>
@@ -1720,8 +1676,8 @@ f(\pi | y=8)
 <section id="代码练习" class="slide level2">
 <h2>代码练习</h2>
 <p>练习 4.1（将先验与描述配对）。</p>
-<p>下面列出了五种不同的π的先验模型。<br>
-请用以下描述之一标记每个先验：有些偏向 <span class="math inline">\(\pi\)</span> &lt; 0.5，有些强烈偏向<span class="math inline">\(\pi\)</span> &lt; 0.5，有些将<span class="math inline">\(\pi\)</span>置于0.5中心，有些偏向<span class="math inline">\(\pi\)</span> &gt; 0.5，有些强烈偏向<span class="math inline">\(\pi\)</span> &gt; 0.5。<br>
+<p>下面列出了五种不同的先验模型。<br>
+请用以下描述之一标记每个先验：有些偏向 <span class="math inline">\(\theta\)</span> &lt; 0.5，有些强烈偏向<span class="math inline">\(\theta\)</span> &lt; 0.5，有些将<span class="math inline">\(\theta\)</span>置于0.5中心，有些偏向<span class="math inline">\(\theta\)</span> &gt; 0.5，有些强烈偏向<span class="math inline">\(\theta\)</span> &gt; 0.5。<br>
 - a) Beta(1.8,1.8)<br>
 - b) Beta(3,2)<br>
 - c) Beta(1,10)<br>
@@ -1732,7 +1688,7 @@ f(\pi | y=8)
 
 <p>练习 4.2（将图形与代码配对）。</p>
 <p>下面的绘图函数更可能使用了哪些参数生成了下面的图形？<br>
-<img data-src="https://www.bayesrulesbook.com/bookdown_files/figure-html/unnamed-chunk-142-1.png"><br>
+<img data-src="figs/lec4/unnamed-chunk-142-1.png" style="width:48.0%"><br>
 - a) <span class="math inline">\(\alpha\)</span> = 2, <span class="math inline">\(\beta\)</span> = 2, y = 8, n = 11<br>
 - b) <span class="math inline">\(\alpha\)</span> = 2, <span class="math inline">\(\beta\)</span> = 2, y = 3, n = 11<br>
 - c) <span class="math inline">\(\alpha\)</span> = 3, <span class="math inline">\(\beta\)</span> = 8, y = 2, n = 6<br>
@@ -1745,136 +1701,23 @@ f(\pi | y=8)
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="" aria-label="1"></a>bayesian_analysis_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
-<span id="cb25-2"><a href="" aria-label="2"></a>    alpha, beta, y, n,</span>
-<span id="cb25-3"><a href="" aria-label="3"></a>    <span class="at">plot_prior      =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb25-4"><a href="" aria-label="4"></a>    <span class="at">plot_likelihood =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb25-5"><a href="" aria-label="5"></a>    <span class="at">plot_posterior  =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb25-6"><a href="" aria-label="6"></a>    <span class="at">xlabel          =</span> <span class="fu">expression</span>(<span class="st">"ACC"</span> <span class="sc">~</span> pi),</span>
-<span id="cb25-7"><a href="" aria-label="7"></a>    <span class="at">show_legend     =</span> <span class="cn">TRUE</span></span>
-<span id="cb25-8"><a href="" aria-label="8"></a>) {</span>
-<span id="cb25-9"><a href="" aria-label="9"></a>  </span>
-<span id="cb25-10"><a href="" aria-label="10"></a>  <span class="co"># 图例位置</span></span>
-<span id="cb25-11"><a href="" aria-label="11"></a>  legend_loc <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.005</span>, <span class="fl">0.995</span>)  <span class="co"># 左上角</span></span>
-<span id="cb25-12"><a href="" aria-label="12"></a>  </span>
-<span id="cb25-13"><a href="" aria-label="13"></a>  <span class="co"># 先验分布</span></span>
-<span id="cb25-14"><a href="" aria-label="14"></a>  <span class="cf">if</span> (plot_prior) {</span>
-<span id="cb25-15"><a href="" aria-label="15"></a>    x_prior <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">qbeta</span>(<span class="fl">1e-4</span>, alpha, beta), <span class="fu">qbeta</span>(<span class="dv">1</span> <span class="sc">-</span> <span class="fl">1e-4</span>, alpha, beta), <span class="at">length.out =</span> <span class="dv">100</span>)</span>
-<span id="cb25-16"><a href="" aria-label="16"></a>    y_prior <span class="ot">&lt;-</span> <span class="fu">dbeta</span>(x_prior, alpha, beta)</span>
-<span id="cb25-17"><a href="" aria-label="17"></a>    prior_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> x_prior, <span class="at">y =</span> y_prior, <span class="at">dist =</span> <span class="st">"Prior"</span>)</span>
-<span id="cb25-18"><a href="" aria-label="18"></a>  }</span>
-<span id="cb25-19"><a href="" aria-label="19"></a>  </span>
-<span id="cb25-20"><a href="" aria-label="20"></a>  <span class="co"># 似然分布</span></span>
-<span id="cb25-21"><a href="" aria-label="21"></a>  <span class="cf">if</span> (plot_likelihood) {</span>
-<span id="cb25-22"><a href="" aria-label="22"></a>    x_like <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
-<span id="cb25-23"><a href="" aria-label="23"></a>    y_like <span class="ot">&lt;-</span> <span class="fu">dbeta</span>(x_like, y <span class="sc">+</span> <span class="dv">1</span>, n <span class="sc">-</span> y <span class="sc">+</span> <span class="dv">1</span>)</span>
-<span id="cb25-24"><a href="" aria-label="24"></a>    like_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> x_like, <span class="at">y =</span> y_like, <span class="at">dist =</span> <span class="st">"Likelihood"</span>)</span>
-<span id="cb25-25"><a href="" aria-label="25"></a>  }</span>
-<span id="cb25-26"><a href="" aria-label="26"></a>  </span>
-<span id="cb25-27"><a href="" aria-label="27"></a>  <span class="co"># 后验分布</span></span>
-<span id="cb25-28"><a href="" aria-label="28"></a>  <span class="cf">if</span> (plot_posterior) {</span>
-<span id="cb25-29"><a href="" aria-label="29"></a>    a_post <span class="ot">&lt;-</span> alpha <span class="sc">+</span> y</span>
-<span id="cb25-30"><a href="" aria-label="30"></a>    b_post <span class="ot">&lt;-</span> beta <span class="sc">+</span> n <span class="sc">-</span> y</span>
-<span id="cb25-31"><a href="" aria-label="31"></a>    x_post <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">qbeta</span>(<span class="fl">1e-4</span>, a_post, b_post), <span class="fu">qbeta</span>(<span class="dv">1</span> <span class="sc">-</span> <span class="fl">1e-4</span>, a_post, b_post), <span class="at">length.out =</span> <span class="dv">100</span>)</span>
-<span id="cb25-32"><a href="" aria-label="32"></a>    y_post <span class="ot">&lt;-</span> <span class="fu">dbeta</span>(x_post, a_post, b_post)</span>
-<span id="cb25-33"><a href="" aria-label="33"></a>    post_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> x_post, <span class="at">y =</span> y_post, <span class="at">dist =</span> <span class="st">"Posterior"</span>)</span>
-<span id="cb25-34"><a href="" aria-label="34"></a>  }</span>
-<span id="cb25-35"><a href="" aria-label="35"></a>  </span>
-<span id="cb25-36"><a href="" aria-label="36"></a>  <span class="co"># 合并数据 </span></span>
-<span id="cb25-37"><a href="" aria-label="37"></a>  plot_data <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, <span class="fu">Filter</span>(<span class="fu">Negate</span>(is.null), <span class="fu">list</span>(</span>
-<span id="cb25-38"><a href="" aria-label="38"></a>    <span class="cf">if</span> (plot_prior)      <span class="fu">transform</span>(prior_df, <span class="at">dist =</span> <span class="st">"prior"</span>)      <span class="cf">else</span> <span class="cn">NULL</span>,</span>
-<span id="cb25-39"><a href="" aria-label="39"></a>    <span class="cf">if</span> (plot_likelihood) <span class="fu">transform</span>(like_df,  <span class="at">dist =</span> <span class="st">"likelihood"</span>) <span class="cf">else</span> <span class="cn">NULL</span>,</span>
-<span id="cb25-40"><a href="" aria-label="40"></a>    <span class="cf">if</span> (plot_posterior)  <span class="fu">transform</span>(post_df,  <span class="at">dist =</span> <span class="st">"posterior"</span>)  <span class="cf">else</span> <span class="cn">NULL</span></span>
-<span id="cb25-41"><a href="" aria-label="41"></a>  )))</span>
-<span id="cb25-42"><a href="" aria-label="42"></a>  plot_data<span class="sc">$</span>dist <span class="ot">&lt;-</span> <span class="fu">factor</span>(plot_data<span class="sc">$</span>dist, <span class="fu">c</span>(<span class="st">"prior"</span>,<span class="st">"likelihood"</span>,<span class="st">"posterior"</span>))</span>
-<span id="cb25-43"><a href="" aria-label="43"></a>  </span>
-<span id="cb25-44"><a href="" aria-label="44"></a>  <span class="co"># 作图</span></span>
-<span id="cb25-45"><a href="" aria-label="45"></a>  cols_fill <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">prior=</span><span class="st">"#f0e442"</span>, <span class="at">likelihood=</span><span class="st">"#0071b2"</span>, <span class="at">posterior=</span><span class="st">"#009e74"</span>)</span>
-<span id="cb25-46"><a href="" aria-label="46"></a>  present   <span class="ot">&lt;-</span> <span class="fu">intersect</span>(<span class="fu">c</span>(<span class="st">"prior"</span>,<span class="st">"likelihood"</span>,<span class="st">"posterior"</span>), <span class="fu">unique</span>(plot_data<span class="sc">$</span>dist))</span>
-<span id="cb25-47"><a href="" aria-label="47"></a>  legend_levels <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(<span class="fu">rbind</span>(<span class="fu">paste0</span>(present, <span class="st">"_line"</span>),</span>
-<span id="cb25-48"><a href="" aria-label="48"></a>                                   <span class="fu">paste0</span>(present, <span class="st">"_fill"</span>)))</span>
-<span id="cb25-49"><a href="" aria-label="49"></a></span>
-<span id="cb25-50"><a href="" aria-label="50"></a>  labs_all <span class="ot">&lt;-</span> <span class="fu">setNames</span>(<span class="fu">c</span>(</span>
-<span id="cb25-51"><a href="" aria-label="51"></a>    <span class="fu">sprintf</span>(<span class="st">"Beta(alpha=%d, beta=%d)"</span>, alpha, beta),          <span class="st">"Prior"</span>,</span>
-<span id="cb25-52"><a href="" aria-label="52"></a>    <span class="fu">sprintf</span>(<span class="st">"Binomial(n=%d, p=%.2g)"</span>, n, y<span class="sc">/</span>n),                <span class="st">"Likelihood"</span>,</span>
-<span id="cb25-53"><a href="" aria-label="53"></a>    <span class="fu">sprintf</span>(<span class="st">"Beta(alpha=%d, beta=%d)"</span>, alpha<span class="sc">+</span>y, beta<span class="sc">+</span>n<span class="sc">-</span>y),    <span class="st">"Posterior"</span></span>
-<span id="cb25-54"><a href="" aria-label="54"></a>  ), <span class="fu">c</span>(<span class="st">"prior_line"</span>,<span class="st">"prior_fill"</span>,<span class="st">"likelihood_line"</span>,<span class="st">"likelihood_fill"</span>,</span>
-<span id="cb25-55"><a href="" aria-label="55"></a>       <span class="st">"posterior_line"</span>,<span class="st">"posterior_fill"</span>))[legend_levels]</span>
-<span id="cb25-56"><a href="" aria-label="56"></a></span>
-<span id="cb25-57"><a href="" aria-label="57"></a>  plot_data<span class="sc">$</span>legend_line <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">paste0</span>(plot_data<span class="sc">$</span>dist, <span class="st">"_line"</span>), <span class="at">levels =</span> legend_levels)</span>
-<span id="cb25-58"><a href="" aria-label="58"></a>  plot_data<span class="sc">$</span>legend_fill <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">paste0</span>(plot_data<span class="sc">$</span>dist, <span class="st">"_fill"</span>), <span class="at">levels =</span> legend_levels)</span>
-<span id="cb25-59"><a href="" aria-label="59"></a></span>
-<span id="cb25-60"><a href="" aria-label="60"></a>  p <span class="ot">&lt;-</span> ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(plot_data, ggplot2<span class="sc">::</span><span class="fu">aes</span>(x, y)) <span class="sc">+</span></span>
-<span id="cb25-61"><a href="" aria-label="61"></a>    ggplot2<span class="sc">::</span><span class="fu">geom_area</span>(ggplot2<span class="sc">::</span><span class="fu">aes</span>(<span class="at">fill  =</span> legend_fill),</span>
-<span id="cb25-62"><a href="" aria-label="62"></a>                       <span class="at">alpha =</span> <span class="fl">0.7</span>, <span class="at">position =</span> <span class="st">"identity"</span>, <span class="at">colour =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
-<span id="cb25-63"><a href="" aria-label="63"></a>    ggplot2<span class="sc">::</span><span class="fu">geom_line</span>(ggplot2<span class="sc">::</span><span class="fu">aes</span>(<span class="at">color =</span> legend_line), <span class="at">linewidth =</span> <span class="fl">1.2</span>, <span class="at">lineend =</span> <span class="st">"round"</span>, <span class="at">linejoin =</span> <span class="st">"round"</span>) <span class="sc">+</span></span>
-<span id="cb25-64"><a href="" aria-label="64"></a>    ggplot2<span class="sc">::</span><span class="fu">labs</span>(<span class="at">x =</span> xlabel, <span class="at">y =</span> <span class="st">"Density"</span>) <span class="sc">+</span></span>
-<span id="cb25-65"><a href="" aria-label="65"></a>    ggplot2<span class="sc">::</span><span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> ggplot2<span class="sc">::</span><span class="fu">expansion</span>(<span class="at">mult =</span> <span class="dv">0</span>)) <span class="sc">+</span></span>
-<span id="cb25-66"><a href="" aria-label="66"></a>    </span>
-<span id="cb25-67"><a href="" aria-label="67"></a>    ggplot2<span class="sc">::</span><span class="fu">scale_fill_manual</span>(</span>
-<span id="cb25-68"><a href="" aria-label="68"></a>      <span class="at">name   =</span> <span class="cn">NULL</span>,</span>
-<span id="cb25-69"><a href="" aria-label="69"></a>      <span class="at">values =</span> <span class="fu">setNames</span>(<span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"_fill$"</span>, legend_levels),</span>
-<span id="cb25-70"><a href="" aria-label="70"></a>                               cols_fill[<span class="fu">sub</span>(<span class="st">"_fill$"</span>, <span class="st">""</span>, legend_levels)], <span class="cn">NA</span>),</span>
-<span id="cb25-71"><a href="" aria-label="71"></a>                        legend_levels),</span>
-<span id="cb25-72"><a href="" aria-label="72"></a>      <span class="at">breaks =</span> legend_levels,</span>
-<span id="cb25-73"><a href="" aria-label="73"></a>      <span class="at">labels =</span> labs_all,</span>
-<span id="cb25-74"><a href="" aria-label="74"></a>      <span class="at">drop   =</span> <span class="cn">FALSE</span></span>
-<span id="cb25-75"><a href="" aria-label="75"></a>    ) <span class="sc">+</span></span>
-<span id="cb25-76"><a href="" aria-label="76"></a>    ggplot2<span class="sc">::</span><span class="fu">scale_color_manual</span>(</span>
-<span id="cb25-77"><a href="" aria-label="77"></a>      <span class="at">name   =</span> <span class="cn">NULL</span>,</span>
-<span id="cb25-78"><a href="" aria-label="78"></a>      <span class="at">values =</span> <span class="fu">setNames</span>(<span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"_line$"</span>, legend_levels), <span class="st">"black"</span>, <span class="cn">NA</span>),</span>
-<span id="cb25-79"><a href="" aria-label="79"></a>                        legend_levels),</span>
-<span id="cb25-80"><a href="" aria-label="80"></a>      <span class="at">breaks =</span> legend_levels,</span>
-<span id="cb25-81"><a href="" aria-label="81"></a>      <span class="at">labels =</span> labs_all,</span>
-<span id="cb25-82"><a href="" aria-label="82"></a>      <span class="at">drop   =</span> <span class="cn">FALSE</span></span>
-<span id="cb25-83"><a href="" aria-label="83"></a>    ) <span class="sc">+</span></span>
-<span id="cb25-84"><a href="" aria-label="84"></a>    ggplot2<span class="sc">::</span><span class="fu">guides</span>(</span>
-<span id="cb25-85"><a href="" aria-label="85"></a>      <span class="at">fill  =</span> ggplot2<span class="sc">::</span><span class="fu">guide_legend</span>(<span class="at">order =</span> <span class="dv">1</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb25-86"><a href="" aria-label="86"></a>      <span class="at">color =</span> ggplot2<span class="sc">::</span><span class="fu">guide_legend</span>(<span class="at">order =</span> <span class="dv">1</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb25-87"><a href="" aria-label="87"></a>    ) <span class="sc">+</span></span>
-<span id="cb25-88"><a href="" aria-label="88"></a>    papaja<span class="sc">::</span><span class="fu">theme_apa</span>()<span class="sc">+</span> </span>
-<span id="cb25-89"><a href="" aria-label="89"></a>    ggplot2<span class="sc">::</span><span class="fu">theme</span>(</span>
-<span id="cb25-90"><a href="" aria-label="90"></a>      <span class="at">legend.margin =</span> <span class="fu">margin</span>(<span class="at">t =</span> <span class="dv">2</span>, <span class="at">r =</span> <span class="dv">4</span>, <span class="at">b =</span> <span class="dv">2</span>, <span class="at">l =</span> <span class="dv">4</span>, <span class="at">unit =</span> <span class="st">"pt"</span>),</span>
-<span id="cb25-91"><a href="" aria-label="91"></a>      <span class="at">legend.background    =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"transparent"</span>, <span class="at">colour =</span> <span class="cn">NA</span>, <span class="at">linewidth =</span> <span class="fl">0.6</span>),</span>
-<span id="cb25-92"><a href="" aria-label="92"></a>      <span class="at">legend.box.background=</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"transparent"</span>, <span class="at">colour =</span> <span class="st">"grey"</span>, <span class="at">linewidth =</span> <span class="fl">0.6</span>),</span>
-<span id="cb25-93"><a href="" aria-label="93"></a>      <span class="at">legend.key           =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"transparent"</span>, <span class="at">colour =</span> <span class="cn">NA</span>),</span>
-<span id="cb25-94"><a href="" aria-label="94"></a>      <span class="at">axis.text.y  =</span> ggplot2<span class="sc">::</span><span class="fu">element_blank</span>(),</span>
-<span id="cb25-95"><a href="" aria-label="95"></a>      <span class="at">axis.ticks.y =</span> ggplot2<span class="sc">::</span><span class="fu">element_blank</span>(),</span>
-<span id="cb25-96"><a href="" aria-label="96"></a>      <span class="at">axis.title.y =</span> ggplot2<span class="sc">::</span><span class="fu">element_blank</span>(),</span>
-<span id="cb25-97"><a href="" aria-label="97"></a>      <span class="at">axis.text.x  =</span> ggplot2<span class="sc">::</span><span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>), </span>
-<span id="cb25-98"><a href="" aria-label="98"></a>      <span class="at">legend.box =</span> <span class="st">"vertical"</span>,</span>
-<span id="cb25-99"><a href="" aria-label="99"></a>      <span class="at">legend.position             =</span> <span class="st">"inside"</span>,</span>
-<span id="cb25-100"><a href="" aria-label="100"></a>      <span class="at">legend.position.inside      =</span> legend_loc,</span>
-<span id="cb25-101"><a href="" aria-label="101"></a>      <span class="at">legend.justification.inside =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb25-102"><a href="" aria-label="102"></a>    )</span>
-<span id="cb25-103"><a href="" aria-label="103"></a>  </span>
-<span id="cb25-104"><a href="" aria-label="104"></a>  <span class="fu">return</span>(p)</span>
-<span id="cb25-105"><a href="" aria-label="105"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-</section>
-<section class="slide level2">
-
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="" aria-label="1"></a><span class="co">#---------------------------------------------------------------------------</span></span>
-<span id="cb26-2"><a href="" aria-label="2"></a><span class="co">#                            请替换...填入 Beta 分布参数, alpha 和 beta</span></span>
-<span id="cb26-3"><a href="" aria-label="3"></a><span class="co">#---------------------------------------------------------------------------</span></span>
-<span id="cb26-4"><a href="" aria-label="4"></a><span class="co"># 设置 Beta 分布参数</span></span>
-<span id="cb26-5"><a href="" aria-label="5"></a>alpha <span class="ot">=</span> ...     <span class="co"># alpha</span></span>
-<span id="cb26-6"><a href="" aria-label="6"></a>beta  <span class="ot">=</span> ...     <span class="co"># beta</span></span>
-<span id="cb26-7"><a href="" aria-label="7"></a></span>
-<span id="cb26-8"><a href="" aria-label="8"></a><span class="co">#---------------------------------------------------------------------------</span></span>
-<span id="cb26-9"><a href="" aria-label="9"></a><span class="co">#                            请替换...请填入观测数据 y 和 n</span></span>
-<span id="cb26-10"><a href="" aria-label="10"></a><span class="co">#---------------------------------------------------------------------------</span></span>
-<span id="cb26-11"><a href="" aria-label="11"></a>y <span class="ot">=</span> ...     <span class="co"># y 代表支持数</span></span>
-<span id="cb26-12"><a href="" aria-label="12"></a>n <span class="ot">=</span> ...     <span class="co"># n 代表总人数</span></span>
-<span id="cb26-13"><a href="" aria-label="13"></a></span>
-<span id="cb26-14"><a href="" aria-label="14"></a><span class="co">#---------------------------------------------------------------------------</span></span>
-<span id="cb26-15"><a href="" aria-label="15"></a><span class="co">#                            请使用 bayesian_analysis_plot 进行绘图</span></span>
-<span id="cb26-16"><a href="" aria-label="16"></a><span class="co">#---------------------------------------------------------------------------</span></span>
-<span id="cb26-17"><a href="" aria-label="17"></a><span class="fu">bayesian_analysis_plot</span>(...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="" aria-label="1"></a><span class="co">#---------------------------------------------------------------------------</span></span>
+<span id="cb25-2"><a href="" aria-label="2"></a><span class="co">#                            请替换...填入 Beta 分布参数, alpha 和 beta</span></span>
+<span id="cb25-3"><a href="" aria-label="3"></a><span class="co">#---------------------------------------------------------------------------</span></span>
+<span id="cb25-4"><a href="" aria-label="4"></a><span class="co"># 设置 Beta 分布参数</span></span>
+<span id="cb25-5"><a href="" aria-label="5"></a>alpha <span class="ot">=</span> ...     <span class="co"># alpha</span></span>
+<span id="cb25-6"><a href="" aria-label="6"></a>beta  <span class="ot">=</span> ...     <span class="co"># beta</span></span>
+<span id="cb25-7"><a href="" aria-label="7"></a></span>
+<span id="cb25-8"><a href="" aria-label="8"></a><span class="co">#---------------------------------------------------------------------------</span></span>
+<span id="cb25-9"><a href="" aria-label="9"></a><span class="co">#                            请替换...请填入观测数据 y 和 n</span></span>
+<span id="cb25-10"><a href="" aria-label="10"></a><span class="co">#---------------------------------------------------------------------------</span></span>
+<span id="cb25-11"><a href="" aria-label="11"></a>y <span class="ot">=</span> ...     <span class="co"># y 代表支持数</span></span>
+<span id="cb25-12"><a href="" aria-label="12"></a>n <span class="ot">=</span> ...     <span class="co"># n 代表总人数</span></span>
+<span id="cb25-13"><a href="" aria-label="13"></a></span>
+<span id="cb25-14"><a href="" aria-label="14"></a><span class="co">#---------------------------------------------------------------------------</span></span>
+<span id="cb25-15"><a href="" aria-label="15"></a><span class="co">#                            请使用 bayesian_analysis_plot 进行绘图</span></span>
+<span id="cb25-16"><a href="" aria-label="16"></a><span class="co">#---------------------------------------------------------------------------</span></span>
+<span id="cb25-17"><a href="" aria-label="17"></a><span class="fu">bayesian_analysis_plot</span>(...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -1889,32 +1732,26 @@ f(\pi | y=8)
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="" aria-label="1"></a><span class="co"># 答案</span></span>
-<span id="cb27-2"><a href="" aria-label="2"></a></span>
-<span id="cb27-3"><a href="" aria-label="3"></a><span class="co">#---------------------------------------------------------------------------</span></span>
-<span id="cb27-4"><a href="" aria-label="4"></a><span class="co">#                            请填入 Beta 分布参数，alpha 和 beta</span></span>
-<span id="cb27-5"><a href="" aria-label="5"></a><span class="co">#---------------------------------------------------------------------------</span></span>
-<span id="cb27-6"><a href="" aria-label="6"></a><span class="co"># 设置 Beta 分布参数</span></span>
-<span id="cb27-7"><a href="" aria-label="7"></a>alpha <span class="ot">=</span> <span class="dv">10</span>     <span class="co"># alpha</span></span>
-<span id="cb27-8"><a href="" aria-label="8"></a>beta  <span class="ot">=</span> <span class="dv">50</span>     <span class="co"># beta</span></span>
-<span id="cb27-9"><a href="" aria-label="9"></a></span>
-<span id="cb27-10"><a href="" aria-label="10"></a><span class="co">#---------------------------------------------------------------------------</span></span>
-<span id="cb27-11"><a href="" aria-label="11"></a><span class="co">#                            请填入观测数据 y 和 n</span></span>
-<span id="cb27-12"><a href="" aria-label="12"></a><span class="co">#---------------------------------------------------------------------------</span></span>
-<span id="cb27-13"><a href="" aria-label="13"></a>y <span class="ot">=</span> <span class="dv">80</span>     <span class="co"># y 代表支持数</span></span>
-<span id="cb27-14"><a href="" aria-label="14"></a>n <span class="ot">=</span> <span class="dv">180</span>    <span class="co"># n 代表总人数</span></span>
-<span id="cb27-15"><a href="" aria-label="15"></a></span>
-<span id="cb27-16"><a href="" aria-label="16"></a><span class="fu">bayesian_analysis_plot</span>(alpha, beta, y, n)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="" aria-label="1"></a><span class="co"># 答案</span></span>
+<span id="cb26-2"><a href="" aria-label="2"></a></span>
+<span id="cb26-3"><a href="" aria-label="3"></a><span class="co">#---------------------------------------------------------------------------</span></span>
+<span id="cb26-4"><a href="" aria-label="4"></a><span class="co">#                            请填入 Beta 分布参数，alpha 和 beta</span></span>
+<span id="cb26-5"><a href="" aria-label="5"></a><span class="co">#---------------------------------------------------------------------------</span></span>
+<span id="cb26-6"><a href="" aria-label="6"></a><span class="co"># 设置 Beta 分布参数</span></span>
+<span id="cb26-7"><a href="" aria-label="7"></a>alpha <span class="ot">=</span> <span class="dv">10</span>     <span class="co"># alpha</span></span>
+<span id="cb26-8"><a href="" aria-label="8"></a>beta  <span class="ot">=</span> <span class="dv">50</span>     <span class="co"># beta</span></span>
+<span id="cb26-9"><a href="" aria-label="9"></a></span>
+<span id="cb26-10"><a href="" aria-label="10"></a><span class="co">#---------------------------------------------------------------------------</span></span>
+<span id="cb26-11"><a href="" aria-label="11"></a><span class="co">#                            请填入观测数据 y 和 n</span></span>
+<span id="cb26-12"><a href="" aria-label="12"></a><span class="co">#---------------------------------------------------------------------------</span></span>
+<span id="cb26-13"><a href="" aria-label="13"></a>y <span class="ot">=</span> <span class="dv">80</span>     <span class="co"># y 代表支持数</span></span>
+<span id="cb26-14"><a href="" aria-label="14"></a>n <span class="ot">=</span> <span class="dv">180</span>    <span class="co"># n 代表总人数</span></span>
+<span id="cb26-15"><a href="" aria-label="15"></a></span>
+<span id="cb26-16"><a href="" aria-label="16"></a><span class="fu">bayesian_analysis_plot</span>(alpha, beta, y, n)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure>
-<p><img data-src="assets/figs/lec4/unnamed-chunk-20-1.png" width="1440"></p>
-</figure>
+
 </div>
-</div>
-</div>
-</section>
+<img data-src="assets/figs/lec4/unnamed-chunk-19-1.png" width="960" class="r-stretch"></section>
 <section class="slide level2">
 
 <h3 id="bonus使用数学公式证明后验确实利用了来自先验和似然的信息">💐Bonus：使用数学公式证明，后验确实利用了来自先验和似然的信息</h3>
@@ -1924,18 +1761,18 @@ f(\pi | y=8)
 <p>（* 注：以下涉及的公式包含上一节bonus中的内容）</p>
 <p>由于后验分布属于beta分布，因此它的平均值可以写成：</p>
 <p><span class="math display">\[  
-E(\pi | Y=y)  = \frac{\alpha + y}{\alpha + \beta + n}  .  
+E(\theta | Y=y)  = \frac{\alpha + y}{\alpha + \beta + n}  .  
 \]</span></p>
 </section>
 <section class="slide level2">
 
 <p>我们可以将<span class="math inline">\(\frac{\alpha + y}{\alpha + \beta + n}\)</span>拆成以下两部分</p>
 <p><span class="math display">\[  
-E(\pi | Y=y)  
+E(\theta | Y=y)  
 = \frac{\alpha}{\alpha + \beta + n} + \frac{y}{\alpha + \beta + n}  \\  
 = \frac{\alpha}{\alpha + \beta + n}\cdot\frac{\alpha + \beta}{\alpha + \beta} + \frac{y}{\alpha + \beta + n}\cdot\frac{n}{n}  \\  
 = \frac{\alpha + \beta}{\alpha + \beta + n}\cdot\frac{\alpha}{\alpha + \beta} + \frac{n}{\alpha + \beta + n}\cdot\frac{y}{n}  \\  
-= \frac{\alpha + \beta}{\alpha + \beta + n}\cdot E(\pi) + \frac{n}{\alpha + \beta + n}\cdot\frac{y}{n}  .  \\  
+= \frac{\alpha + \beta}{\alpha + \beta + n}\cdot E(\theta) + \frac{n}{\alpha + \beta + n}\cdot\frac{y}{n}  .  \\  
 \]</span></p>
 <p><span class="math display">\[  
 y: success \space trial,\; n: total \space trials \\  
@@ -1962,7 +1799,7 @@ $$<br>
 <section class="slide level2">
 
 <p>附录：</p>
-<p>本课的Python代码与R代码为单独的代码脚本，见：https://github.com/hcp4715/psybayesian</p>
+<p>本课的Python代码与R代码为单独的代码脚本，见：hhttps://github.com/hcp4715/psybayesian/blob/master/lec4.py</p>
 
 </section>
     </div>
